@@ -1,9 +1,8 @@
 package net.tlipinski.bitwig.controller.commands.transport;
 
 import com.bitwig.extension.controller.api.Transport;
+import net.tlipinski.bitwig.controller.Midi;
 import net.tlipinski.bitwig.controller.MidiCommand;
-
-import java.util.stream.Stream;
 
 public class TransportStopCommand implements MidiCommand {
 
@@ -12,18 +11,15 @@ public class TransportStopCommand implements MidiCommand {
     }
 
     @Override
-    public Stream<Boolean> triggersWhen(int statusByte, int data1, int data2) {
-        return Stream.of(
-                statusByte == 0xB0,
-                data1 == 29
-        );
+    public boolean triggersWhen(int statusByte, int data1, int data2) {
+        return statusByte == Midi.CH1_CC
+                && data1 == Midi.TRANSPORT_STOP
+                && Midi.isPressed(data2);
     }
 
     @Override
     public void handle(int data1, int data2) {
-        if (data2 == 1) {
-            transport.stop();
-        }
+        transport.stop();
     }
 
     private final Transport transport;

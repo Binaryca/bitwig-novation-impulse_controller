@@ -1,9 +1,12 @@
 package net.tlipinski.bitwig.controller.commands.mixer;
 
-import net.tlipinski.bitwig.controller.*;
+import net.tlipinski.bitwig.controller.ButtonsMode;
+import net.tlipinski.bitwig.controller.Controller;
+import net.tlipinski.bitwig.controller.Midi;
+import net.tlipinski.bitwig.controller.MidiCommand;
+import net.tlipinski.bitwig.controller.MidiSend;
+import net.tlipinski.bitwig.controller.SysexSend;
 import net.tlipinski.bitwig.controller.observers.callbacks.RefreshAllLightsCallback;
-
-import java.util.stream.Stream;
 
 public class ButtonsModeCommand implements MidiCommand {
 
@@ -16,29 +19,20 @@ public class ButtonsModeCommand implements MidiCommand {
     }
 
     @Override
-    public Stream<Boolean> triggersWhen(int statusByte, int data1, int data2) {
-        return Stream.of(
-                statusByte == 0xB0,
-                data1 == 34
-        );
+    public boolean triggersWhen(int statusByte, int data1, int data2) {
+        return statusByte == Midi.CH1_CC && data1 == Midi.BUTTONS_MODE;
     }
 
     @Override
     public void handle(int data1, int data2) {
-        if (data2 == 1) {
-            controller.changeButtonsMode(ButtonsMode.MUTE);
-            new RefreshAllLightsCallback(controller, midiSend).valueChanged(ButtonsMode.MUTE);
-            sysexSend.displayText("Mutes");
-        }
-        if (data2 == 0){
-            controller.changeButtonsMode(ButtonsMode.SOLO);
-            new RefreshAllLightsCallback(controller, midiSend).valueChanged(ButtonsMode.SOLO);
-            sysexSend.displayText("Solos");
-        }
+        // The mode button is a hardware toggle: 1 selects mutes, 0 selects solos.
+        ButtonsMode mode = Midi.isPressed(data2) ? ButtonsMode.MUTE : ButtonsMode.SOLO;
+        controller.changeButtonsMode(mode);
+        new RefreshAllLightsCallback(controller, midiSend).valueChanged(mode);
+        sysexSend.displayText(mode == ButtonsMode.MUTE ? "Mutes" : "Solos");
     }
 
-    private Controller controller;
+    private final Controller controller;
     private final MidiSend midiSend;
-    private SysexSend sysexSend;
-
+    private final SysexSend sysexSend;
 }

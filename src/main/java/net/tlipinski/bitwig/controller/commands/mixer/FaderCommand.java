@@ -2,11 +2,10 @@ package net.tlipinski.bitwig.controller.commands.mixer;
 
 import com.bitwig.extension.controller.api.Track;
 import net.tlipinski.bitwig.controller.Controller;
+import net.tlipinski.bitwig.controller.Midi;
 import net.tlipinski.bitwig.controller.MidiCommand;
 import net.tlipinski.bitwig.controller.MidiSend;
 import net.tlipinski.bitwig.controller.SysexSend;
-
-import java.util.stream.Stream;
 
 public class FaderCommand implements MidiCommand {
 
@@ -17,31 +16,30 @@ public class FaderCommand implements MidiCommand {
     }
 
     @Override
-    public Stream<Boolean> triggersWhen(int statusByte, int data1, int data2) {
-        return Stream.of(
-                controller.getModel().isImpulse49or61(),
-                statusByte == 0xB0,
-                data1 >= 0,
-                data1 <= 8
-        );
+    public boolean triggersWhen(int statusByte, int data1, int data2) {
+        return controller.getModel().isImpulse49or61()
+                && statusByte == Midi.CH1_CC
+                && data1 >= Midi.FADER_FIRST
+                && data1 <= Midi.FADER_LAST;
     }
 
     @Override
     public void handle(int data1, int data2) {
-        Track t = this.controller.getTracks().get(data1);
-        if (t != null) {
-            t.getVolume().set(data2, 128);
-            this.sysexSend.displayText(t.name().get());
-
-            // this will display volume value
-            this.midiSend.send(0xB0, data1, data2);
-        } else {
-            this.sysexSend.displayText("<empty>");
+        Track track = controller.getTracks().get(data1);
+        if (track == null) {
+            sysexSend.displayText("<empty>");
+            return;
         }
+
+        track.volume().set(data2, 128);
+        sysexSend.displayText(track.name().get());
+
+        // Echo the value back so the Impulse displays the volume level.
+        midiSend.send(Midi.CH1_CC, data1, data2);
+        sysexSend.displayNumber(data2);
     }
 
-    private Controller controller;
+    private final Controller controller;
     private final MidiSend midiSend;
-    private SysexSend sysexSend;
-
+    private final SysexSend sysexSend;
 }

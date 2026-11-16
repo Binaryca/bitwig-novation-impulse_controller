@@ -9,8 +9,8 @@ public class ChannelCountObserver {
 
     public ChannelCountObserver(Controller controller, MidiSend midiSend) {
         for (Track t : controller.getTracks().getAll()) {
-            t.getMute().markInterested();
-            t.getSolo().markInterested();
+            t.mute().markInterested();
+            t.solo().markInterested();
         }
 
         controller.getTracks().getTrackBank().channelCount().addValueObserver((int count) -> {

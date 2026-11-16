@@ -21,15 +21,22 @@ public class SysexCallback implements SysexMidiDataReceivedCallback {
             host.println("Received sysex: " + data);
         }
 
-        Matcher matcher = impulseWelcome.matcher(data);
+        Matcher matcher = IMPULSE_WELCOME.matcher(data);
         if (matcher.matches()) {
             int model = Integer.valueOf(matcher.group(1), 16);
-            controller.setModel(ImpulseModel.get(model));
-            host.showPopupNotification("Novation Impulse " + model + " Initialized");
+            try {
+                controller.setModel(ImpulseModel.get(model));
+                host.showPopupNotification("Novation Impulse " + model + " Initialized");
+                controller.getSysexSend().displayText("Ready");
+                controller.getSysexSend().displayNumber(model);
+            } catch (IllegalArgumentException e) {
+                host.errorln("Unsupported Novation Impulse model: " + model);
+                controller.getSysexSend().displayText("Unknown");
+            }
         }
     }
 
-    private Pattern impulseWelcome = Pattern.compile("f00020296707(..)f7");
+    private static final Pattern IMPULSE_WELCOME = Pattern.compile("f00020296707(..)f7");
     private final ControllerHost host;
     private final Controller controller;
     private final Preferences prefs;

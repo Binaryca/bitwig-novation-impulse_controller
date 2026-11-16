@@ -1,64 +1,68 @@
 package net.tlipinski.bitwig.controller;
 
 import com.bitwig.extension.controller.api.ClipLauncherSlot;
-import com.bitwig.extension.controller.api.ClipLauncherSlotBank;
-import com.bitwig.extension.controller.api.Track;
 
+/**
+ * Keeps the eight clip-launch pad LEDs in sync with the current scene.
+ */
 public class ClipLauncher {
+
     public ClipLauncher(Controller controller) {
-        controller.getTracks().getSceneBank().scrollPosition().markInterested();
+        this.controller = controller;
+        controller.setClipLauncher(this);
 
-        for (int t = 0; t < 8; t++) {
-            Track channel = controller.getTracks().getTrackBank().getChannel(t);
-            ClipLauncherSlotBank clips = channel.clipLauncherSlotBank();
+        for (int i = 0; i < Midi.TRACK_COUNT; i++) {
+            final int trackIndex = i;
+            ClipLauncherSlot clip = clip(trackIndex);
+            clip.hasContent().markInterested();
+            clip.isPlaying().markInterested();
+            clip.isPlaybackQueued().markInterested();
+            clip.isStopQueued().markInterested();
 
-            for (int i = 0; i < clips.getSizeOfBank(); i++) {
-                final ClipLauncherSlot clip = clips.getItemAt(i);
-                clip.hasContent().markInterested();
+            clip.isPlaying().addValueObserver(isPlaying -> refreshTrack(trackIndex));
+            clip.isPlaybackQueued().addValueObserver(isQueued -> refreshTrack(trackIndex));
+            clip.isStopQueued().addValueObserver(isQueued -> refreshTrack(trackIndex));
+            clip.hasContent().addValueObserver(hasContent -> refreshTrack(trackIndex));
+        }
 
-                final int idx = t;
-                clip.isPlaybackQueued().addValueObserver((boolean is) -> {
-                    controller.getHost().println("PlaybackQueued " + idx + " " + is);
-                    if (is) {
-                        controller.getMidiSend().clipLight(idx, ClipLight.PLAYBACK_QUEUED);
-                    } else {
-                        controller.getMidiSend().clipLight(idx, ClipLight.PLAYING);
-                    }
-                });
+        controller.getTracks().getSceneBank().scrollPosition().addValueObserver(position -> {
+            controller.getSysexSend().displayText("Scene " + (position + 1));
+            refreshAll();
+        });
+        refreshAll();
+    }
 
-                clip.isPlaying().addValueObserver((boolean is) -> {
-                    controller.getHost().println("Playing " + idx + " " + is);
-                    if (is) {
-                        controller.getMidiSend().clipLight(idx, ClipLight.PLAYING);
-                    } else {
-                        if (clip.hasContent().get()) {
-                            controller.getMidiSend().clipLight(idx, ClipLight.STOPPED);
-                        } else {
-                            controller.getMidiSend().clipLight(idx, ClipLight.EMPTY);
-                        }
-                    }
-                });
-
-                clip.hasContent().addValueObserver((boolean is) -> {
-                    controller.getHost().println("Content " + idx + " " + is);
-                    if (is) {
-
-                    } else {
-
-                    }
-                });
-
-                clip.isStopQueued().addValueObserver((boolean is) -> {
-                    controller.getHost().println("StopQueued " + idx + " " + is);
-                    if (is) {
-                        controller.getMidiSend().clipLight(idx, ClipLight.STOP_QUEUED);
-                    }
-                });
-
-                clip.isSelected().addValueObserver((boolean is) -> {
-                    controller.getHost().println("Selected " + idx + " " + is);
-                });
-            }
+    public void refreshAll() {
+        for (int trackIndex = 0; trackIndex < Midi.TRACK_COUNT; trackIndex++) {
+            refreshTrack(trackIndex);
         }
     }
+
+    public void refreshTrack(int trackIndex) {
+        ClipLauncherSlot clip = clip(trackIndex);
+        ClipLight light;
+
+        if (clip.isPlaying().get()) {
+            light = ClipLight.PLAYING;
+        } else if (clip.isPlaybackQueued().get()) {
+            light = ClipLight.PLAYBACK_QUEUED;
+        } else if (clip.isStopQueued().get()) {
+            light = ClipLight.STOP_QUEUED;
+        } else if (clip.hasContent().get()) {
+            light = ClipLight.STOPPED;
+        } else {
+            light = ClipLight.EMPTY;
+        }
+
+        controller.getMidiSend().clipLight(trackIndex, light);
+    }
+
+    private ClipLauncherSlot clip(int trackIndex) {
+        return controller.getTracks().getTrackBank()
+                .getItemAt(trackIndex)
+                .clipLauncherSlotBank()
+                .getItemAt(0);
+    }
+
+    private final Controller controller;
 }

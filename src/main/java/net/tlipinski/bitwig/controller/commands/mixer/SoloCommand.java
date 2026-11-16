@@ -1,9 +1,12 @@
 package net.tlipinski.bitwig.controller.commands.mixer;
 
 import com.bitwig.extension.controller.api.Track;
-import net.tlipinski.bitwig.controller.*;
-
-import java.util.stream.Stream;
+import net.tlipinski.bitwig.controller.ButtonsMode;
+import net.tlipinski.bitwig.controller.Controller;
+import net.tlipinski.bitwig.controller.Midi;
+import net.tlipinski.bitwig.controller.MidiCommand;
+import net.tlipinski.bitwig.controller.MidiSend;
+import net.tlipinski.bitwig.controller.SysexSend;
 
 public class SoloCommand implements MidiCommand {
 
@@ -14,34 +17,32 @@ public class SoloCommand implements MidiCommand {
     }
 
     @Override
-    public Stream<Boolean> triggersWhen(int statusByte, int data1, int data2) {
-        return Stream.of(
-                controller.getButtonsMode() == ButtonsMode.SOLO,
-                statusByte == 0xB0,
-                data1 >= 9,
-                data1 <= 17
-        );
+    public boolean triggersWhen(int statusByte, int data1, int data2) {
+        return controller.getButtonsMode() == ButtonsMode.SOLO
+                && statusByte == Midi.CH1_CC
+                && data1 >= Midi.BUTTON_FIRST
+                && data1 <= Midi.BUTTON_LAST;
     }
 
     @Override
     public void handle(int data1, int data2) {
-        int buttonIndex = data1 - 9;
-        if (data2 == 1) {
-            Track t = controller.getTracks().get(buttonIndex);
-            if (t != null) {
-                t.getSolo().toggle();
-                boolean solo = t.getSolo().get();
-                midiSend.light(buttonIndex, solo);
-
-                sysexSend.displayText(t.name().get());
-            } else {
-                sysexSend.displayText("<empty>");
-            }
+        if (!Midi.isPressed(data2)) {
+            return;
         }
+
+        int buttonIndex = data1 - Midi.BUTTON_FIRST;
+        Track track = controller.getTracks().get(buttonIndex);
+        if (track == null) {
+            sysexSend.displayText("<empty>");
+            return;
+        }
+
+        track.solo().toggle();
+        midiSend.light(buttonIndex, track.solo().get());
+        sysexSend.displayText(track.name().get());
     }
 
     private final Controller controller;
     private final MidiSend midiSend;
     private final SysexSend sysexSend;
-
 }

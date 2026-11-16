@@ -24,10 +24,10 @@ public class RefreshAllLightsCallback implements ObjectValueChangedCallback<Butt
             Track track = all.get(i);
 
             if (newValue == ButtonsMode.MUTE) {
-                handleMute(i, track.getMute().get());
+                handleMute(i, track.mute().get());
             }
             if (newValue == ButtonsMode.SOLO) {
-                handleSolo(i, track.getSolo().get());
+                handleSolo(i, track.solo().get());
             }
         }
     }

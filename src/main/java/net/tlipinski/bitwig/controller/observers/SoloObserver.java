@@ -12,7 +12,7 @@ public class SoloObserver {
         List<Track> all = controller.getTracks().getAll();
         for (int i = 0; i < all.size(); i++) {
             Track t = all.get(i);
-            t.getSolo().addValueObserver(new SoloCallback(i, controller, midiSend));
+            t.solo().addValueObserver(new SoloCallback(i, controller, midiSend));
         }
     }
 }

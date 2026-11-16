@@ -1,39 +1,31 @@
 package net.tlipinski.bitwig.controller.commands.clips;
 
-import com.bitwig.extension.controller.api.ClipLauncherSlot;
-import com.bitwig.extension.controller.api.ClipLauncherSlotBank;
 import com.bitwig.extension.controller.api.Track;
 import net.tlipinski.bitwig.controller.Controller;
+import net.tlipinski.bitwig.controller.Midi;
 import net.tlipinski.bitwig.controller.MidiCommand;
-
-import java.util.stream.Stream;
 
 public class ClipStopCommand implements MidiCommand {
 
     public ClipStopCommand(Controller controller) {
         this.controller = controller;
-
-        for (int i = 0; i < 8; i++) {
-            controller.getMidiSend().send(0xB0, 60 + i, 0);
-        }
     }
 
     @Override
-    public Stream<Boolean> triggersWhen(int statusByte, int data1, int data2) {
-        return Stream.of(
-                controller.isShiftPressed(),
-                statusByte == 0xB0,
-                data1 >= 60,
-                data1 <= 67
-        );
+    public boolean triggersWhen(int statusByte, int data1, int data2) {
+        return controller.isShiftPressed()
+                && statusByte == Midi.CH1_CC
+                && data1 >= Midi.CLIP_FIRST
+                && data1 <= Midi.CLIP_LAST
+                && Midi.isPressed(data2);
     }
 
     @Override
     public void handle(int data1, int data2) {
-        int index = data1 - 60;
-        Track channel = controller.getTracks().getTrackBank().getChannel(index);
+        int trackIndex = data1 - Midi.CLIP_FIRST;
+        Track channel = controller.getTracks().getTrackBank().getItemAt(trackIndex);
         channel.stop();
     }
 
-    private Controller controller;
+    private final Controller controller;
 }

@@ -1,11 +1,12 @@
 package net.tlipinski.bitwig.controller;
 
 import com.bitwig.extension.controller.api.ControllerHost;
+import com.bitwig.extension.controller.api.MidiOut;
 
 public class MidiSend {
 
     public MidiSend(ControllerHost host) {
-        this.host = host;
+        this.midiOut = host.getMidiOutPort(0);
     }
 
     public void light(int index, boolean on) {
@@ -17,29 +18,30 @@ public class MidiSend {
     }
 
     public void clipLight(int index, ClipLight light) {
-        host.getMidiOutPort(0).sendMidi(0xB0, 60 + index, light.light);
+        midiOut.sendMidi(Midi.CH1_CC, Midi.CLIP_FIRST + index, light.light);
     }
 
     public void send(int status, int data1, int data2) {
-        host.getMidiOutPort(0).sendMidi(status, data1, data2);
+        midiOut.sendMidi(status, data1, data2);
     }
 
     public void resetEncoderMode() {
-        host.getMidiOutPort(0).sendMidi(0xB1, 10, 1);
+        midiOut.sendMidi(Midi.CH2_CC, Midi.ENCODER_PLUGIN_MODE, 1);
     }
 
     public void resetButtonsMode() {
-        // TODO why it doesn't work?
-        host.getMidiOutPort(0).sendMidi(0xB0, 34, 1);
+        // TODO: the hardware does not confirm this state; find the correct
+        // feedback message for the mute/solo mode button.
+        midiOut.sendMidi(Midi.CH1_CC, Midi.BUTTONS_MODE, 1);
     }
 
     private void lightOn(int index) {
-        host.getMidiOutPort(0).sendMidi(0xB0, 9 + index, 1);
+        midiOut.sendMidi(Midi.CH1_CC, Midi.BUTTON_FIRST + index, 1);
     }
 
     private void lightOff(int index) {
-        host.getMidiOutPort(0).sendMidi(0xB0, 9 + index, 0);
+        midiOut.sendMidi(Midi.CH1_CC, Midi.BUTTON_FIRST + index, 0);
     }
 
-    private final ControllerHost host;
+    private final MidiOut midiOut;
 }

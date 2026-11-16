@@ -3,10 +3,9 @@ package net.tlipinski.bitwig.controller.commands;
 import com.bitwig.extension.controller.api.CursorTrack;
 import com.bitwig.extension.controller.api.Track;
 import net.tlipinski.bitwig.controller.Controller;
+import net.tlipinski.bitwig.controller.Midi;
 import net.tlipinski.bitwig.controller.MidiCommand;
 import net.tlipinski.bitwig.controller.SysexSend;
-
-import java.util.stream.Stream;
 
 public class TrackNextCommand implements MidiCommand {
 
@@ -22,21 +21,17 @@ public class TrackNextCommand implements MidiCommand {
     }
 
     @Override
-    public Stream<Boolean> triggersWhen(int statusByte, int data1, int data2) {
-        return Stream.of(
-                statusByte == 0xB0,
-                data1 == 37,
-                data2 == 1
-        );
+    public boolean triggersWhen(int statusByte, int data1, int data2) {
+        return statusByte == Midi.CH1_CC
+                && data1 == Midi.TRACK_NEXT
+                && Midi.isPressed(data2);
     }
 
     @Override
     public void handle(int data1, int data2) {
         CursorTrack cursorTrack = controller.getTracks().getCursorTrack();
         cursorTrack.selectNext();
-        controller.getHost().scheduleTask(() -> {
-            sysexSend.displayText(cursorTrack.name().get());
-        }, 200);
+        controller.getHost().scheduleTask(() -> sysexSend.displayText(cursorTrack.name().get()), 200);
     }
 
     private final Controller controller;

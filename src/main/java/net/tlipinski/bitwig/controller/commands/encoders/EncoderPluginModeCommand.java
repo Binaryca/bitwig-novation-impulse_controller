@@ -1,23 +1,23 @@
 package net.tlipinski.bitwig.controller.commands.encoders;
 
-import net.tlipinski.bitwig.controller.*;
-
-import java.util.stream.Stream;
+import net.tlipinski.bitwig.controller.Controller;
+import net.tlipinski.bitwig.controller.EncoderMode;
+import net.tlipinski.bitwig.controller.Midi;
+import net.tlipinski.bitwig.controller.MidiCommand;
+import net.tlipinski.bitwig.controller.SysexSend;
 
 public class EncoderPluginModeCommand implements MidiCommand {
 
-    public EncoderPluginModeCommand(Controller controller, MidiSend midiSend, SysexSend sysexSend) {
+    public EncoderPluginModeCommand(Controller controller, SysexSend sysexSend) {
         this.controller = controller;
-        this.midiSend = midiSend;
         this.sysexSend = sysexSend;
     }
 
     @Override
-    public Stream<Boolean> triggersWhen(int statusByte, int data1, int data2) {
-        return Stream.of(
-                statusByte == 0xB1,
-                data1 == 10
-        );
+    public boolean triggersWhen(int statusByte, int data1, int data2) {
+        return statusByte == Midi.CH2_CC
+                && data1 == Midi.ENCODER_PLUGIN_MODE
+                && Midi.isPressed(data2);
     }
 
     @Override
@@ -26,8 +26,6 @@ public class EncoderPluginModeCommand implements MidiCommand {
         sysexSend.displayText("Plugin");
     }
 
-    private Controller controller;
-    private final MidiSend midiSend;
-    private SysexSend sysexSend;
-
+    private final Controller controller;
+    private final SysexSend sysexSend;
 }

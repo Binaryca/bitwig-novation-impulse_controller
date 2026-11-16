@@ -1,9 +1,8 @@
 package net.tlipinski.bitwig.controller.commands.encoders;
 
 import net.tlipinski.bitwig.controller.Controller;
+import net.tlipinski.bitwig.controller.Midi;
 import net.tlipinski.bitwig.controller.MidiCommand;
-
-import java.util.stream.Stream;
 
 public class EncoderPageDownCommand implements MidiCommand {
 
@@ -12,11 +11,10 @@ public class EncoderPageDownCommand implements MidiCommand {
     }
 
     @Override
-    public Stream<Boolean> triggersWhen(int statusByte, int data1, int data2) {
-        return Stream.of(
-                statusByte == 0xB1,
-                data1 == 12
-        );
+    public boolean triggersWhen(int statusByte, int data1, int data2) {
+        return statusByte == Midi.CH2_CC
+                && data1 == Midi.ENCODER_PAGE_DOWN
+                && Midi.isPressed(data2);
     }
 
     @Override
@@ -25,5 +23,4 @@ public class EncoderPageDownCommand implements MidiCommand {
     }
 
     private final Controller controller;
-
 }

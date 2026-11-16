@@ -2,10 +2,9 @@ package net.tlipinski.bitwig.controller.commands.encoders;
 
 import net.tlipinski.bitwig.controller.Controller;
 import net.tlipinski.bitwig.controller.EncoderMode;
+import net.tlipinski.bitwig.controller.Midi;
 import net.tlipinski.bitwig.controller.MidiCommand;
 import net.tlipinski.bitwig.controller.SysexSend;
-
-import java.util.stream.Stream;
 
 public class EncoderMixerPageUpCommand implements MidiCommand {
 
@@ -15,12 +14,11 @@ public class EncoderMixerPageUpCommand implements MidiCommand {
     }
 
     @Override
-    public Stream<Boolean> triggersWhen(int statusByte, int data1, int data2) {
-        return Stream.of(
-                controller.getEncoderMode() == EncoderMode.MIXER,
-                statusByte == 0xB1,
-                data1 == 11
-        );
+    public boolean triggersWhen(int statusByte, int data1, int data2) {
+        return controller.getEncoderMode() == EncoderMode.MIXER
+                && statusByte == Midi.CH2_CC
+                && data1 == Midi.ENCODER_PAGE_UP
+                && Midi.isPressed(data2);
     }
 
     @Override
@@ -31,5 +29,4 @@ public class EncoderMixerPageUpCommand implements MidiCommand {
 
     private final Controller controller;
     private final SysexSend sysexSend;
-
 }

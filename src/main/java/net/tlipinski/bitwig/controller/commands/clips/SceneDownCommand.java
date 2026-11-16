@@ -1,11 +1,9 @@
 package net.tlipinski.bitwig.controller.commands.clips;
 
-import com.bitwig.extension.controller.api.*;
+import com.bitwig.extension.controller.api.Application;
 import net.tlipinski.bitwig.controller.Controller;
+import net.tlipinski.bitwig.controller.Midi;
 import net.tlipinski.bitwig.controller.MidiCommand;
-import net.tlipinski.bitwig.controller.observers.callbacks.RefreshClipLauncherCallback;
-
-import java.util.stream.Stream;
 
 public class SceneDownCommand implements MidiCommand {
 
@@ -15,29 +13,23 @@ public class SceneDownCommand implements MidiCommand {
     public SceneDownCommand(Controller controller) {
         this.controller = controller;
         this.application = controller.getHost().createApplication();
-
         application.panelLayout().markInterested();
     }
 
     @Override
-    public Stream<Boolean> triggersWhen(int statusByte, int data1, int data2) {
-        return Stream.of(
-                application.panelLayout().get().equals(Application.PANEL_LAYOUT_MIX),
-                statusByte == 0xB0,
-                data1 == 28
-        );
+    public boolean triggersWhen(int statusByte, int data1, int data2) {
+        return application.panelLayout().get().equals(Application.PANEL_LAYOUT_MIX)
+                && statusByte == Midi.CH1_CC
+                && data1 == Midi.SCENE_DOWN;
     }
 
     @Override
     public void handle(int data1, int data2) {
-        if (data2 == 1) {
+        if (Midi.isPressed(data2)) {
             controller.getTracks().getSceneBank().scrollForwards();
-
-            // read comment in SceneUpCommand
+            // The scene bank contains one scene, so index 0 is the current scene.
             controller.getTracks().getSceneBank().getScene(0).selectInEditor();
-
-            new RefreshClipLauncherCallback(controller).refresh();
+            controller.getClipLauncher().refreshAll();
         }
     }
-
 }

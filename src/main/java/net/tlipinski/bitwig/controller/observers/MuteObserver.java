@@ -13,7 +13,7 @@ public class MuteObserver {
         List<Track> all = controller.getTracks().getAll();
         for (int i = 0; i < all.size(); i++) {
             Track t = all.get(i);
-            t.getMute().addValueObserver(new MuteCallback(i, controller, midiSend));
+            t.mute().addValueObserver(new MuteCallback(i, controller, midiSend));
         }
     }
 

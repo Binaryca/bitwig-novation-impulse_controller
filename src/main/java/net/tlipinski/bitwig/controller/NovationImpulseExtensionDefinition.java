@@ -53,7 +53,7 @@ public class NovationImpulseExtensionDefinition extends ControllerExtensionDefin
    @Override
    public int getRequiredAPIVersion()
    {
-      return 3;
+      return 25;
    }
 
    @Override
