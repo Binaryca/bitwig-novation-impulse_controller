@@ -1,0 +1,224 @@
+# Novation Impulse control mapping
+
+All values below refer to the template sent by the extension from
+**Bitwig Settings > Controllers > Novation Impulse > Send template**.
+
+- `B0` means a MIDI Control Change message on channel 1.
+- `B1` means a MIDI Control Change message on channel 2.
+- Buttons and pads send `127`/`1` when pressed and `0` when released.
+- Encoders send relative values centered around `64`.
+
+## Transport
+
+The rewind, fast-forward and loop buttons change meaning while Bitwig's **Mix**
+panel is open. This mirrors the keyboard's built-in Ableton Session View
+behaviour (see [HARDWARE.md](HARDWARE.md)); the extension maps the same
+pattern onto Bitwig's Mix panel.
+
+| Button | CC | Arrange view | Mix view |
+| --- | ---: | --- | --- |
+| Rewind | `B0 27` | Rewind | Previous scene |
+| Fast-forward | `B0 28` | Fast-forward | Next scene |
+| Stop | `B0 29` | Stop | Stop |
+| Play | `B0 30` | Play | Play |
+| Loop | `B0 31` | Toggle arranger loop | Launch current scene |
+| Record | `B0 32` | Record | Record |
+| Shift + Rewind | `B1 13` + `B0 27` | Undo | Undo |
+| Shift + Fast-forward | `B1 13` + `B0 28` | Redo | Redo |
+| Shift + Loop | `B1 13` + `B0 31` | - | Stop all clips |
+
+The extension lights the Play, Record and Loop button LEDs according to the
+Bitwig transport state. The Impulse does not document LED feedback for these
+non-assignable buttons, so the feedback may not be visible on all units.
+
+Scene changes also update the clip pad LEDs and show `Scene N` on the display.
+
+## Faders
+
+| Control | CC | Impulse 25 | Impulse 49/61 |
+| --- | ---: | --- | --- |
+| Fader 1-8 | `B0 0` - `B0 7` | Track 1-8 volume | Track 1-8 volume |
+| Master fader | `B0 8` | Cursor track volume | Master volume |
+
+The display shows the track name while a fader moves. The fader value is echoed
+back to the Impulse so its own display shows the current level.
+
+## Track buttons
+
+The eight track buttons below the faders, plus the master button, use CC
+`B0 9` - `B0 17`:
+
+| Button | CC |
+| --- | ---: |
+| Track 1-8 | `B0 9` - `B0 16` |
+| Master | `B0 17` |
+
+### Mute mode
+
+- Press a track button to toggle mute for that track.
+- LED **on** means the track is **not muted**; LED **off** means muted.
+- The master button toggles master mute.
+- **Shift + track button** mutes only the selected track and unmutes all others
+  (exclusive mute).
+
+### Solo mode
+
+- Press a track button to toggle solo for that track.
+- LED **on** means the track is soloed.
+- **Shift + track button** solos only the selected track and clears all other
+  solos (exclusive solo).
+
+The mode is switched with CC `B0 34`:
+
+| Value | Mode | Display |
+| --- | --- | --- |
+| `1` | Mute | `Mutes` |
+| `0` | Solo | `Solos` |
+
+**Shift + the mode button** clears every mute in mute mode or every solo in
+solo mode for the eight visible tracks and the master track; the display shows
+`ClrMutes` or `ClrSolos`. The mode button still toggles like a normal press, so
+after clearing, the button mode follows the hardware toggle state.
+
+## Encoders
+
+The encoders and encoder buttons use channel 2:
+
+| Control | CC |
+| --- | ---: |
+| Encoder 1-8 | `B1 0` - `B1 7` |
+| Mixer mode | `B1 9` |
+| Plugin mode | `B1 10` |
+| Previous page | `B1 11` |
+| Next page | `B1 12` |
+| Shift | `B1 13` |
+
+### Plugin mode
+
+- Encoders 1-8 control the eight remote-control parameters of the selected
+  device.
+- Previous/next page changes the remote-control page.
+- The display shows the parameter name and the current value.
+
+### Mixer mode
+
+- Encoders 1-8 control the selected mixer page for tracks 1-8.
+- Pages:
+  1. **Pan**
+  2. **Send 1**
+  3. **Send 2**
+  4. **Send 3**
+  5. **Send 4**
+  6. **Send 5**
+  7. **Send 6**
+- Previous/next page changes the mixer page; the page does not wrap.
+- The display shows the track name and the current value.
+- Sends that do not exist on a track in Bitwig show a zero value; moving the
+  encoder has no effect for them.
+
+## Clip launcher
+
+The eight drum pads use CC `B0 60` - `B0 67`. The pad behaviour mirrors the
+keyboard's built-in Ableton Clip Launch mode (see
+[HARDWARE.md](HARDWARE.md)):
+
+| Pad | CC | Action |
+| --- | ---: | --- |
+| Pad 1-8 | `B0 60` - `B0 67` | Launch the clip in the current scene for track 1-8 |
+| Shift + Pad 1-8 | `B1 13` + `B0 60` - `B0 67` | Stop the corresponding track |
+
+The extension uses a one-scene track bank. Rewind/fast-forward in the Mix view
+move that scene window up and down. The pad LEDs show the state of the clip in
+the current scene:
+
+| LED state | Meaning |
+| --- | --- |
+| Off | Empty slot |
+| Playing | Clip is playing |
+| Queued | Clip playback is queued |
+| Stop queued | Clip stop is queued |
+| Stopped | Clip exists but is stopped |
+
+## Track bank and cursor
+
+| Control | CC | Action |
+| --- | ---: | --- |
+| Track bank up | `B0 35` | Previous page of eight tracks |
+| Track bank down | `B0 36` | Next page of eight tracks |
+| Track previous | `B0 38` | Select the previous track |
+| Track next | `B0 37` | Select the next track |
+| Reserved | `B0 39` | Ignored |
+
+Track bank paging shows the visible track range on the display, for example
+`[1-8]`.
+
+## Display
+
+The Impulse display has eight characters in the text area plus a separate
+three-character numeric area. The extension uses the text area for:
+
+- Track names
+- `<empty>` for empty tracks or slots
+- Remote-control parameter names
+- `Plugin` / `Mixer` encoder mode
+- `Pan` / `Send 1` - `Send 6` mixer pages
+- `Mutes` / `Solos` button mode
+- `ClrMutes` / `ClrSolos` after clearing all mutes/solos
+- `Undo` / `Redo` after an undo or redo
+- `Scene N` after a scene change
+- `[first-last]` after track bank paging
+- `Ready` (with the model number in the numeric area) after the Impulse answers
+  the device inquiry at startup
+
+While a fader or encoder moves, the numeric area shows the current value
+(0-127 for faders, 0-100 for encoder parameters).
+
+The optional **Control labels** preference (see README) additionally stores
+persistent labels for the fader, button and knob zones; the hardware shows
+these labels when it runs in label mode (see [HARDWARE.md](HARDWARE.md)).
+
+## Data knob
+
+The data knob is **not** part of the fader, knob or pad zones, so the plugin
+mode does not affect it. In normal operation it stays a hardware control for
+selecting templates and editing menus and sends no MIDI.
+
+**Program Change mode** (press Shift + MIDI Chan to enter, the data knob press
+= Enter to leave) makes the data knob transmit Program Change messages on
+channel 1 (`C0 pp`) automatically while turning:
+
+| Message | Action |
+| --- | --- |
+| `C0 pp` | Step through the presets of the selected device |
+
+Turning the knob opens the Bitwig **popup browser** with the presets of the
+selected device and moves the visible highlight by the turned amount; the
+display shows the preset name under the highlight. About a second after the
+knob stops moving, the highlighted preset is loaded and the browser closes.
+Turning past the ends of the list is clamped by the browser (the selection
+stays on the first or last preset). The browser opens again on the next
+turn, directly at the loaded preset. The program number shown by the
+hardware is only used as relative movement and does not correspond to the
+preset index.
+
+Note: the old preset API (`Device.loadPreset`) is unavailable when the
+extension requires API version 25, so the popup browser API is used instead.
+The knob steps are sent as the browser's own file selection actions, which
+move the visible highlight in the redesigned browser (Bitwig 5/6). While the
+knob drives the browser, its preview (audition) is temporarily disabled -
+each step would otherwise load the preset for preview, which grows Bitwig's
+memory considerably during fast sweeps; the setting is restored when the
+browser closes.
+
+## Pedals and keyboard
+
+The extension registers a Bitwig note input for both Impulse MIDI inputs. The
+note input includes:
+
+- Note on/off
+- Aftertouch
+- Pitch wheel
+- Modulation wheel (CC 1)
+- Expression pedal (CC 11)
+- Sustain pedal (CC 64)
+- Drum pad notes and pad aftertouch
