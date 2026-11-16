@@ -4,7 +4,8 @@ Pracovní seznam funkcionalit, které plánujeme do pluginu implementovat.
 Doplňková dokumentace: [HARDWARE.md](HARDWARE.md) (hardware a SysEx),
 [CONTROLS.md](CONTROLS.md) (mapování ovladačů), [README](../README.md) (instalace a build).
 
-**Stav:** verze 1.3, branch `improvements`, změny zatím necommitnuté (čeká se na git identitu).
+**Stav:** verze 1.3, branch `improvements`, změny committed 17.11.2026
+(identity `Binaryca <139915326+Binaryca@users.noreply.github.com>`).
 
 ## Hotovo (v1.2)
 
@@ -177,8 +178,10 @@ Doplňková dokumentace: [HARDWARE.md](HARDWARE.md) (hardware a SysEx),
 
 ## Údržba a infrastruktura
 
-- [ ] **Git commity** – rozdělit změny do logických commitů (build, opravy,
-  refaktor, dokumentace, features). Čeká na `user.name` / `user.email`.
+- [x] **Git commity** – rozděleny do logických commitů (build/CI, dokumentace,
+  rework na API 25, P0 funkce, data knob + wiring) 17.11.2026.
+  Push čeká na fork `tlipinski/bitwig-novation-impulse` pod účtem `Binaryca`
+  (origin ukazuje na původní repozitář).
 - [ ] **CI** – GitHub Actions workflow (JDK 21 + Maven, artefakt `.bwextension`),
   případně nahradit `circle.yml`.
 - [ ] **Release 1.3** – tag, připojit `.bwextension` k release, changelog v README.
