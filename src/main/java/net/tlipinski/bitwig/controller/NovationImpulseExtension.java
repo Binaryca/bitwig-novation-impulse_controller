@@ -9,7 +9,6 @@ import net.tlipinski.bitwig.controller.commands.encoders.*;
 import net.tlipinski.bitwig.controller.commands.mixer.*;
 import net.tlipinski.bitwig.controller.commands.transport.*;
 import net.tlipinski.bitwig.controller.observers.*;
-import net.tlipinski.bitwig.controller.observers.callbacks.RefreshClipLauncherCallback;
 
 import java.util.Arrays;
 import java.util.List;
@@ -40,11 +39,15 @@ public class NovationImpulseExtension extends ControllerExtension {
         List<MidiCommand> midiCommands = Arrays.asList(
                 new ClipStopCommand(controller),
                 new ClipLauncherCommand(controller),
+                new UndoCommand(controller),
+                new RedoCommand(controller),
                 new SceneUpCommand(controller),
                 new SceneDownCommand(controller),
                 new SceneLaunchCommand(controller),
                 new FaderCursorCommand(controller, midiSend, sysexSend),
                 new FaderCommand(controller, midiSend, sysexSend),
+                new DataKnobCommand(controller),
+                new ClearAllMutesSolosCommand(controller, midiSend, sysexSend),
                 new ButtonsModeCommand(controller, midiSend, sysexSend),
                 new SingleMuteCommand(controller, midiSend, sysexSend),
                 new SingleSoloCommand(controller, midiSend, sysexSend),
@@ -66,19 +69,19 @@ public class NovationImpulseExtension extends ControllerExtension {
                 new TransportRecordCommand(host.createTransport()),
                 new ShiftPressedCommand(controller),
                 new ShiftReleasedCommand(controller),
-                new NoOpShiftCommand(),
+                new NoOpCommand(),
                 new TrackPreviousCommand(controller, sysexSend),
                 new TrackNextCommand(controller, sysexSend),
-                new EncoderPluginModeCommand(controller, midiSend, sysexSend),
+                new EncoderPluginModeCommand(controller, sysexSend),
                 new EncoderMixerModeCommand(controller, midiSend, sysexSend)
         );
 
         new MuteObserver(controller, midiSend);
         new SoloObserver(controller, midiSend);
         new ChannelCountObserver(controller, midiSend);
+        new TransportLedObserver(host.createTransport(), midiSend);
         new EncoderBankIndexObserver(controller, sysexSend);
         new TrackBankIndexObserver(controller, sysexSend);
-        new RefreshClipLauncherCallback(controller);
 
         host.getMidiInPort(0).setMidiCallback(new MidiCallback(host, prefs, midiCommands));
         host.getMidiInPort(1).setMidiCallback(new MidiCallback(host, prefs, midiCommands));
@@ -86,10 +89,18 @@ public class NovationImpulseExtension extends ControllerExtension {
         host.getMidiInPort(0).setSysexCallback(new SysexCallback(host, controller, prefs));
         host.getMidiInPort(1).setSysexCallback(new SysexCallback(host, controller, prefs));
 
-        NoteInput noteInputs0 = createNoteInputs(host, 0);
-        NoteInput noteInputs1 = createNoteInputs(host, 1);
+        createNoteInputs(host, 0);
+        createNoteInputs(host, 1);
 
         sysexSend.initController();
+
+        if (prefs.sendTemplateAtStartup()) {
+            sysexSend.sendTemplate(new Template().toSysexString());
+        }
+
+        if (prefs.controlLabels()) {
+            sysexSend.sendControlLabels(ControlLabels.FADERS, ControlLabels.BUTTONS, ControlLabels.KNOBS);
+        }
     }
 
     @Override

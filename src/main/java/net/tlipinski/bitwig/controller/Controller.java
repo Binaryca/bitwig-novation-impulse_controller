@@ -27,8 +27,8 @@ public class Controller {
 
     public void printTracks() {
         for (int i = 0; i < tracks.getTrackBank().getSizeOfBank(); i++) {
-            Track channel = tracks.getTrackBank().getChannel(i);
-            host.println("" + i + ": " + channel.name().get());
+            Track channel = tracks.getTrackBank().getItemAt(i);
+            host.println(i + ": " + channel.name().get());
         }
     }
 
@@ -46,6 +46,18 @@ public class Controller {
 
     public Preferences getPreferences() {
         return preferences;
+    }
+
+    public SysexSend getSysexSend() {
+        return sysexSend;
+    }
+
+    public ClipLauncher getClipLauncher() {
+        return clipLauncher;
+    }
+
+    public void setClipLauncher(ClipLauncher clipLauncher) {
+        this.clipLauncher = clipLauncher;
     }
 
     public void shiftPressed() {
@@ -81,6 +93,7 @@ public class Controller {
     private final MidiSend midiSend;
     private final SysexSend sysexSend;
     private final Preferences preferences;
+    private ClipLauncher clipLauncher;
     private ButtonsMode buttonsMode = ButtonsMode.MUTE;
     private EncoderMode encoderMode = EncoderMode.PLUGIN;
     private boolean shiftPressed = false;
