@@ -36,6 +36,8 @@ public class NovationImpulseExtension extends ControllerExtension {
         controller = new Controller(host, tracks, midiSend, sysexSend, prefs);
         new ClipLauncher(controller);
 
+        FaderSoftTakeover faderSoftTakeover = new FaderSoftTakeover(controller);
+
         List<MidiCommand> midiCommands = Arrays.asList(
                 new ClipStopCommand(controller),
                 new ClipLauncherCommand(controller),
@@ -44,8 +46,8 @@ public class NovationImpulseExtension extends ControllerExtension {
                 new SceneUpCommand(controller),
                 new SceneDownCommand(controller),
                 new SceneLaunchCommand(controller),
-                new FaderCursorCommand(controller, midiSend, sysexSend),
-                new FaderCommand(controller, midiSend, sysexSend),
+                new FaderCursorCommand(controller, midiSend, sysexSend, faderSoftTakeover),
+                new FaderCommand(controller, midiSend, sysexSend, faderSoftTakeover),
                 new DataKnobCommand(controller),
                 new ClearAllMutesSolosCommand(controller, midiSend, sysexSend),
                 new ButtonsModeCommand(controller, midiSend, sysexSend),
@@ -55,8 +57,8 @@ public class NovationImpulseExtension extends ControllerExtension {
                 new SoloCommand(controller, midiSend, sysexSend),
                 new EncoderPluginCommand(controller, midiSend, sysexSend),
                 new EncoderMixerCommand(controller, midiSend, sysexSend),
-                new TrackBankUpCommand(controller),
-                new TrackBankDownCommand(controller),
+                new TrackBankUpCommand(controller, faderSoftTakeover),
+                new TrackBankDownCommand(controller, faderSoftTakeover),
                 new EncoderMixerPageUpCommand(controller, sysexSend),
                 new EncoderMixerPageDownCommand(controller, sysexSend),
                 new EncoderPageUpCommand(controller),
@@ -84,7 +86,7 @@ public class NovationImpulseExtension extends ControllerExtension {
         new ChannelCountObserver(controller, midiSend);
         new TransportLedObserver(host.createTransport(), midiSend);
         new EncoderBankIndexObserver(controller, sysexSend);
-        new TrackBankIndexObserver(controller, sysexSend);
+        new TrackBankIndexObserver(controller, sysexSend, faderSoftTakeover);
 
         host.getMidiInPort(0).setMidiCallback(new MidiCallback(host, prefs, midiCommands));
         host.getMidiInPort(1).setMidiCallback(new MidiCallback(host, prefs, midiCommands));

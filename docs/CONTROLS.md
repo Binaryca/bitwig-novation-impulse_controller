@@ -52,6 +52,22 @@ Scene changes also update the clip pad LEDs and show `Scene N` on the display.
 | Fader 1-8 | `B0 0` - `B0 7` | Track 1-8 volume | Track 1-8 volume |
 | Master fader | `B0 8` | Cursor track volume | Master volume |
 
+The faders use **soft takeover**: the faders are not motorised, so after a
+track bank change their physical position can differ from the value of the
+track they control. In that case moving the fader does nothing until its
+physical position reaches the value (sweep to it — the display shows the
+track name and the value to reach); from there the fader takes over
+normally. A fader within a few steps of the value engages immediately, and
+after a short pause a far-away fader disengages again. A track bank change
+re-engages all faders for the new values.
+
+The Impulse hardware occasionally reports the position of a resting fader
+(with a small jitter) while another fader is being moved. Such messages
+would make the resting fader's volume wiggle, so the extension drops them:
+while one fader is actively streaming, movements of another fader that stay
+within a few steps of its current value are ignored (a real grab simply
+starts moving and is picked up as usual).
+
 The display shows the track name while a fader moves. The fader value is echoed
 back to the Impulse so its own display shows the current level.
 

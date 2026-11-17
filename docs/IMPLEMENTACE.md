@@ -161,13 +161,45 @@ Doplňková dokumentace: [HARDWARE.md](HARDWARE.md) (hardware a SysEx),
   *Soubory:* `commands/transport/DeviceNavigateCommand`,
   `NovationImpulseExtension` (registrace před transport commands).
 
-- [ ] **Fader soft takeover (pickup)** *(návrh – přenos Nektar logiky `L04F`)*
-  Fader posílá hodnotu jen když je fyzická poloha blízko hodnotě v Bitwigu
-  (Nektar: okno ±3, stavy muted/low/high/active, timeout 250 ms). Bez toho
-  hodnota „skočí", když se fader liší od aktuální hodnoty (typicky po
-  přepnutí stránky mixéru nebo banky stop – fadery nejsou motorizované,
-  takže je nelze přepozicovat). Otestovat na hardware (může cítit „lepkavě").
-  *Soubory:* `FaderCommand`, `FaderCursorCommand`, nový `FaderTakeover`.
+- [x] **Fader soft takeover (pickup)** *(v1.4, implementováno 17.11.2026)*
+  Fadery nejsou motorizované → po přepnutí banky stop se fyzická poloha
+  liší od hodnoty a první pohyb udělal skok. Stavový automat per fader
+  (MUTED / LOW / HIGH / ACTIVE) portovaný z Nektar logiky `L04F`: hodnota
+  se přijme, jen když je fyzická poloha blízko (okno ±3), nebo když fader
+  **přejede hodnotu** (z LOW `incoming > current`, z HIGH `incoming <
+  current`; hrany 127/0 řešeny); po pauze 750 ms se vzdálený fader znovu
+  odpojí. Reset při posunu banky stop: synchronně v
+  `TrackBankUp/DownCommand` (před dalšími fader zprávami) + scrollPosition
+  observer (scrollování z UI) a při změně cursor track (Impulse 25).
+  Odmítnutý pohyb: displej ukáže název stopy + **skutečnou hodnotu**
+  (uživatel ví, kam dojet).
+  **Cross-talk gate** (hardware zvláštnost Impulse): když uživatel hýbe
+  jedním faderem, hardware občas sám vyšle pozici jiného, v klidu
+  stojícího faderu (±2 ADC jitter, nejspíš prosakování dotykových
+  senzorů) — zprávy dorazí 0–18 ms po zprávě pohybovaného faderu a u
+  faderu odpočívajícího na své hodnotě vypadají jako nové uchopení →
+  hlasitost „wiggluje". Gate: zpráva blízko hodnoty (±4), která dorazí
+  do 150 ms po zprávě **jiného** faderu, se tiše zahodí (decision
+  `IGNORE` — žádný display, žádná změna stavu, nebere se jako „stream");
+  vzdálené pohyby a vlastní zprávy streamujícího faderu projdou.
+  Konkvěnda: uchopení (catch) druhého faderu se při současném pohybu
+  dvou faderů odkládá, dokud druhý na ~150 ms neztiší.
+  Poučky: `markInterested()` volat **přes bank item proxy při initu**
+  (Tracks.get(i) vrací null pro prázdné sloty — markovat přes existující
+  stopy nestačí!); skála `value()` je 0..1, CC srovnání =
+  `round(value × 128)` dle `set(a, 128)`; externí změny hodnoty se
+  korigují samy (stav se počítá vůči aktuální hodnotě v každé zprávě) →
+  žádný observer-reset na volume; **hardware může sám vysílat zprávy
+  faderů, které nikdo nedrží** — diagnostika `Fader[i]: in=.. cur=..
+  ACCEPT/reject/ignore` (debug-gated) ukázala interleaved zprávy jiných
+  faderů ve stejných milisekundách; čas (System::nanoTime injektovaný
+  LongSupplier) je jediný spolehlivý diskriminátor.
+  Konstanty: `WINDOW=3`, `CROSS_TALK_WINDOW=4`, `OTHER_STREAM_NANOS=150ms`,
+  `TICK_MS=250`, `TIMER_TICKS=3`. Encodéry takeover nepotřebují
+  (endless = relativní). 14 unit testů (automat + cross-talk gate).
+  *Soubory:* `FaderSoftTakeover`, `FaderSoftTakeoverTest`, `FaderCommand`,
+  `FaderCursorCommand`, `TrackBankIndexObserver`, `TrackBankUpCommand`,
+  `TrackBankDownCommand`, `NovationImpulseExtension`.
 
 - [ ] **Device on/off v plugin režimu** *(návrh – porovnání s Nektar LX61)*
   Tlačítka pod fadery (CC 9–16) v plugin režimu přepínají enabled state
