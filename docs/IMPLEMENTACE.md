@@ -253,8 +253,10 @@ Doplňková dokumentace: [HARDWARE.md](HARDWARE.md) (hardware a SysEx),
   (origin ukazuje na původní repozitář).
 - [ ] **CI** – GitHub Actions workflow (JDK 21 + Maven, artefakt `.bwextension`),
   případně nahradit `circle.yml`.
-- [ ] **Release 1.3** – tag, připojit `.bwextension` k release, changelog v README.
-- [x] **Verze** – bump na 1.3 s první novou funkcí *(pom.xml už je 1.3)*.
+- [x] **Release 1.4** *(17.11.2026)* – tag `v1.4` na `myfork/improvements`,
+  changelog v README (Changes in 1.4). Upload `.bwextension` k release na
+  webu zůstává na uživateli (gh CLI není k dispozici).
+- [x] **Verze** – bump na 1.4 (pom.xml).
 
 ## Testovací checklist (hardware)
 

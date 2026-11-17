@@ -7,6 +7,63 @@ This repository is a locally maintained fork of
 [tlipinski/bitwig-novation-impulse](https://github.com/tlipinski/bitwig-novation-impulse).
 See [docs/CONTROLS.md](docs/CONTROLS.md) for the complete MIDI mapping.
 
+## Improvements over the original
+
+The original script was built for an older Bitwig Extension API and stopped
+working on current Bitwig versions. This fork modernises it, fixes long
+standing bugs and adds new features:
+
+**Compatibility and stability**
+
+- Migrated to **Bitwig Extension API 25** (Bitwig Studio 6.x)
+- Fixed double handling of button release messages (transport, encoder and
+  track bank buttons acted twice per press)
+- Replaced the stream-based command matcher with a simple boolean check,
+  added MIDI mapping constants and removed duplicated/dead code
+- Fixed the Mixer encoder mode button: the mode buttons report their state
+  value instead of a velocity, which the press matcher rejected
+
+**Mixer and faders**
+
+- Extended the mixer encoder pages from pan + 2 sends to **pan + 6 sends**
+- Added **fader soft takeover (pickup)**: non-motorised faders take over a
+  track only when their physical position reaches the value; stray hardware
+  messages from resting faders (touch sensor cross-talk) are filtered out so
+  volumes do not wiggle
+- Added exclusive mute/solo (Shift + track button) and clearing all
+  mutes/solos (Shift + mute/solo mode button)
+
+**Transport and workflow**
+
+- Transport button **LED feedback** for play, record and loop
+- **Undo/redo** (Shift + rewind/fast-forward) with display feedback
+- **Metronome toggle** (Shift + Play) and **project save** (Shift + Stop)
+- **Transport scrub** (rewind/fast-forward: one beat per click, continuous
+  while held) and **device navigation** in the plugin encoder mode
+  (previous/next device of the cursor track, name on the display)
+- One-scene track bank so scene navigation and clip launch always refer to
+  the same scene window, and clip pad LEDs driven by the current scene only
+- Shift + Scene Launch stops all clips; scene navigation works with the Mix
+  panel open
+
+**Devices, presets and display**
+
+- **Data knob preset browsing** for the selected device (Program Change mode)
+- The display shows `Ready` and the detected model at startup, scene numbers,
+  track and parameter names and numeric values
+- Optional persistent control labels for the fader, button and knob zones
+  (Novation SysEx `67 05`)
+
+**Project**
+
+- Unit test suite (24 tests) and Windows build helpers (`build.cmd`,
+  `build.ps1`) that resolve localized-folder junctions
+- Complete documentation: the control mapping
+  ([docs/CONTROLS.md](docs/CONTROLS.md)), the hardware and SysEx reference
+  ([docs/HARDWARE.md](docs/HARDWARE.md)) and the implementation roadmap
+  ([docs/IMPLEMENTACE.md](docs/IMPLEMENTACE.md))
+- Automatic template send at startup (preference, on by default)
+
 ## Features
 
 - 8 track faders plus master fader (Impulse 49/61)
@@ -24,10 +81,40 @@ See [docs/CONTROLS.md](docs/CONTROLS.md) for the complete MIDI mapping.
   Shift + MIDI Chan)
 - Undo/redo (Shift + rewind/fast-forward) and clearing all mutes/solos
   (Shift + mute/solo mode button)
+- Device navigation in the plugin encoder mode: rewind/fast-forward select
+  the previous/next device of the cursor track
+- Arranger position scrub with the transport rewind/fast-forward buttons
+  (one beat per click, continuous while held)
+- Metronome toggle (Shift + Play) and project save (Shift + Stop)
+- Fader soft takeover (pickup): the faders take over a track only when their
+  physical position reaches the value, with stray hardware messages from
+  resting faders filtered out
 - Transport button LED feedback for play, record and loop
 - Sustain, modulation and expression pedal support through Bitwig note input
 - SysEx template sender in the Bitwig controller preferences, optional
   automatic template send at startup
+
+## Changes in 1.4
+
+- Added **fader soft takeover (pickup)**: the faders are not motorised, so
+  after a track bank change their physical position can differ from the
+  value they control. A fader only takes over when its physical position
+  reaches the value — the display shows the track name and the value to
+  sweep to; a track bank change re-engages all faders for the new values
+- Dropped the stray messages the Impulse hardware sends for **resting
+  faders** while another fader is being moved (touch sensor cross-talk),
+  which made the resting fader's volume wiggle slightly
+- Added **device navigation**: in the plugin encoder mode the rewind /
+  fast-forward buttons select the previous / next device of the cursor
+  track and show its name on the display
+- Added **transport scrub**: the rewind / fast-forward buttons scrub the
+  arranger position, one beat per click or continuously while held
+- Added a **metronome toggle** (Shift + Play, shows `Click On/Off`) and
+  **project save** (Shift + Stop)
+- Fixed the **Mixer encoder mode button**: the mode buttons report their
+  state value instead of a button velocity, which the press matcher
+  rejected, so switching to Mixer mode did not work
+- Fixed device navigation stepping two devices per button press
 
 ## Changes in 1.3
 
@@ -36,8 +123,6 @@ See [docs/CONTROLS.md](docs/CONTROLS.md) for the complete MIDI mapping.
   Chan) the data knob moves the device browser through the presets of the
   selected device and loads the highlighted preset after a short pause
 - Verified the master fader controls the master track on Impulse 49/61
-- Added automatic template send at startup (**Send template at startup**
-  preference, on by default)
 - Added automatic template send at startup (**Send template at startup**
   preference, on by default)
 - Added transport LED feedback: Play, Record and Loop light up according to the
@@ -120,6 +205,10 @@ Select this template on the Impulse before using the controller script.
 | Rewind/Forward in Mix view | Previous/next scene |
 | Loop in Mix view | Launch the current scene |
 | Shift + Loop in Mix view | Stop all clips |
+| Rewind/Fast-forward in Plugin mode | Previous/next device in the chain |
+| Rewind/Fast-forward otherwise | Scrub the arranger position (click = 1 beat, hold = continuous) |
+| Shift + Play | Toggle the metronome click |
+| Shift + Stop | Save the project |
 | Track bank buttons | Scroll the track bank by pages |
 | Track previous/next | Select the cursor track |
 | Data knob (Prog Change mode) | Browse and load presets of the selected device |
