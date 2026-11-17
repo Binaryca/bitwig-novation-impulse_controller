@@ -7,6 +7,23 @@ This repository is a locally maintained fork of
 [tlipinski/bitwig-novation-impulse](https://github.com/tlipinski/bitwig-novation-impulse).
 See [docs/CONTROLS.md](docs/CONTROLS.md) for the complete MIDI mapping.
 
+## Quick install
+
+1. Download
+   [`NovationImpulse.bwextension`](https://github.com/Binaryca/bitwig-novation-impulse_controller/releases/latest)
+   from the latest release.
+2. Copy it to the Bitwig extensions directory:
+   - **Windows:** `%USERPROFILE%\Documents\Bitwig Studio\Extensions`
+   - **macOS:** `Documents/Bitwig Studio/Extensions`
+   - **Linux:** `$HOME/Bitwig Studio/Extensions`
+3. Restart Bitwig Studio and add the **Novation Impulse** controller in
+   **Settings > Controllers** (both Impulse MIDI inputs, if auto-detection
+   does not select them).
+4. Send the controller template: in the controller settings press
+   **Send template**, confirm it on the Impulse with **Save** and select
+   that template — see [Installation](#installation) below for the full
+   step-by-step guide.
+
 ## Improvements over the original
 
 The original script was built for an older Bitwig Extension API and stopped
