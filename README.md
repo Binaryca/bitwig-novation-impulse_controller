@@ -32,6 +32,7 @@ standing bugs and adds new features:
   volumes do not wiggle
 - Added exclusive mute/solo (Shift + track button) and clearing all
   mutes/solos (Shift + mute/solo mode button)
+- Verified the master fader controls the master track on Impulse 49/61
 
 **Transport and workflow**
 
@@ -51,8 +52,8 @@ standing bugs and adds new features:
 - **Data knob preset browsing** for the selected device (Program Change mode)
 - The display shows `Ready` and the detected model at startup, scene numbers,
   track and parameter names and numeric values
-- Optional persistent control labels for the fader, button and knob zones
-  (Novation SysEx `67 05`)
+- Optional persistent control labels and numeric value displays for the
+  fader, button and knob zones (Novation SysEx `67 05` / `67 09`)
 
 **Project**
 
