@@ -15,9 +15,10 @@ public class EncoderPluginModeCommand implements MidiCommand {
 
     @Override
     public boolean triggersWhen(int statusByte, int data1, int data2) {
+        // The zone mode buttons report a state value (0) instead of a press
+        // velocity, so any data2 matches; handle() is idempotent.
         return statusByte == Midi.CH2_CC
-                && data1 == Midi.ENCODER_PLUGIN_MODE
-                && Midi.isPressed(data2);
+                && data1 == Midi.ENCODER_PLUGIN_MODE;
     }
 
     @Override

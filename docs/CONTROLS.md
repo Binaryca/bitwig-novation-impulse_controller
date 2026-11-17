@@ -17,8 +17,8 @@ pattern onto Bitwig's Mix panel.
 
 | Button | CC | Arrange view | Mix view |
 | --- | ---: | --- | --- |
-| Rewind | `B0 27` | Rewind | Previous scene |
-| Fast-forward | `B0 28` | Fast-forward | Next scene |
+| Rewind | `B0 27` | Scrub back (hold; plugin mode: previous device) | Previous scene |
+| Fast-forward | `B0 28` | Scrub forward (hold; plugin mode: next device) | Next scene |
 | Stop | `B0 29` | Stop | Stop |
 | Play | `B0 30` | Play | Play |
 | Loop | `B0 31` | Toggle arranger loop | Launch current scene |
@@ -26,6 +26,18 @@ pattern onto Bitwig's Mix panel.
 | Shift + Rewind | `B1 13` + `B0 27` | Undo | Undo |
 | Shift + Fast-forward | `B1 13` + `B0 28` | Redo | Redo |
 | Shift + Loop | `B1 13` + `B0 31` | - | Stop all clips |
+| Shift + Play | `B1 13` + `B0 30` | Toggle metronome click (`Click`) | Toggle metronome click |
+| Shift + Stop | `B1 13` + `B0 29` | Save project (`Save`) | Save project |
+
+In the plugin encoder mode the Rewind / Fast-forward buttons step through
+the devices of the cursor track instead of rewinding / fast-forwarding; in
+the open Mix panel the scene navigation keeps precedence. Transport
+rewind / fast-forward stays available in the mixer mode while the Mix panel
+is closed.
+
+The Rewind / Fast-forward buttons send their value again while held, so
+holding scrubs the transport or sweeps through the devices (about five
+steps per second).
 
 The extension lights the Play, Record and Loop button LEDs according to the
 Bitwig transport state. The Impulse does not document LED feedback for these

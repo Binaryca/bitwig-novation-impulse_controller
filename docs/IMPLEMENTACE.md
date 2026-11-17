@@ -109,20 +109,57 @@ Doplňková dokumentace: [HARDWARE.md](HARDWARE.md) (hardware a SysEx),
   *Soubory:* `Midi.CH1_PC`, `commands/DataKnobCommand`, `Tracks.getCursorDevice()`,
   test wrap logiky.
 
-- [ ] **Metronom a uložení projektu** *(návrh 16.11.2026 – porovnání s oficiálními
-  Nektar scripty LX61/iX49)*
-  Shift + Play = `transport.toggleClick()` (metronom), Shift + Stop =
-  `application.save()`. Displej `Click` / `Save`. U Nektaru je Shift+Play =
-  click (u nás Shift+Stop = undo? ne – u nás máme Undo na Shift+Rewind, takže
-  Shift+Play i Shift+Stop jsou volné).
-  *Soubory:* `commands/transport/`, `Midi.TRANSPORT_PLAY/STOP`, `Transport`.
+- [x] **Transport scrub** *(v1.4, implementováno 17.11.2026)*
+  Rewind/Forward v mixer režimu (mix panel zavřený) přetáčí transport:
+  klik = 1 beat; **držení = souvislý scrub (~7 beatů/s)** generovaný
+  tickerem (50 ms, krok každé 3 tiknutí) — hardware při držení **neposílá
+  nic** (jen 127 press / 0 release; dřívější „opakování" v logu byly
+  releasy kliků). Každý krok = `transport.setPosition(max(0,
+  getPosition().get() ± 1.0 beat))` — absolutní beat-time, bytecode
+  **clean**. Poučky:
+  **`transport.rewind()` = skok na začátek aranžmá** („Rewinds to the
+  beginning of the arrangement" — ne scrub!), `fastForward()` jen krok;
+  **`incPosition(beats, snap)` interpretuje amount „relative to the given
+  range"** (bez parametru range = normalizace přes délku aranžmá → skok na
+  začátek/konec) → zamítnuto, scrub počítáme ručně. Další poučka:
+  **`.get()` na nepřihlášené value hodí výjimku** („Either call
+  markInterested() or add at least one observer") → `getPosition()`
+  `markInterested()` v konstruktoru. Diagnostika odstraněna po ověření
+  17.11.2026.
+  Protokol režimových tlačítek konbů (důležité, ať to nikdo „neopraví"):
+  tlačítka posílají **jen hodnotu 0** (stav, ne velocity — na rozdíl od
+  transportu) → mode commandy mají match na jakoukoliv hodnotu s
+  idempotentním handle (odemčeno 17.11 večer; `Midi.isPressed` na nich
+  nikdy nesedělo, proto se režim dřív nepřepnul a na displeji nebylo
+  `Mixer`): stisk Plugin+MIDI současně = `B1:09` → režim MIXER + displej
+  `Mixer`; Plugin samo = `B1:10` → PLUGIN; MIDI samo = `B1:08`
+  (nepoužíváme).
+  *Soubory:* `commands/transport/TransportRewindCommand`,
+  `TransportForwardCommand`.
 
-- [ ] **Navigace zařízení v plugin režimu** *(návrh – porovnání s Nektar LX61)*
-  V plugin režimu jsou Rewind/Forward nečinné → namapovat
-  `cursorDevice.selectPrevious()/selectNext()` (Nektar: Instrument mód,
-  Rewind/Forward přepínají zařízení v chainu). Displej: název vybraného
-  zařízení.
-  *Soubory:* `commands/transport/`, `Tracks.getCursorDevice()`.
+- [x] **Metronom a uložení projektu** *(v1.4, implementováno 17.11.2026)*
+  Shift + Play = metronom, displej `Click On` / `Click Off`;
+  Shift + Stop = uložení projektu, displej `Save`. Pozor: `application.save()`
+  v API 25 **neexistuje** (ukládání jde jen přes action systém
+  `application.getActions()`/`getAction(id)`) a ID akcí se mezi verzemi
+  Bitwigu mění (shipped scripty: `getAction("Undo")`, novější:
+  `slice_to_multi_sampler_track`) → akce se hledá jednorázovým skenem podle
+  názvu (`Save`), ne pevným ID; pokud se nenajde, displej `No Save`. Metronom
+  musí jít přes value API `transport.isMetronomeEnabled().toggle()` —
+  klasické `toggleClick()`/`addClickObserver()` jsou gated (deprecated od
+  API 2, havarie extensionu při startu; bytecode audit proxy potvrdil
+  GATED, ostatní transport metody i celé Action API clean).
+  *Soubory:* `commands/transport/MetronomeCommand`, `SaveCommand`.
+
+- [x] **Navigace zařízení v plugin režimu** *(v1.4, implementováno 17.11.2026)*
+  V plugin režimu: Rewind = `cursorDevice.selectPrevious()`, Forward =
+  `selectNext()` (Nektar LX61: Instrument mód). Displej: název zařízení
+  (event-driven přes `name()` observer, hodnota zaostává za výběrem).
+  Gating: `encoderMode == PLUGIN`; v otevřeném mix panelu mají přednost
+  scény (SceneUp/Down registrovány dřív, first-match routing) → transport
+  rewind/forward zůstává v mixer režimu s zavřeným mix panelem.
+  *Soubory:* `commands/transport/DeviceNavigateCommand`,
+  `NovationImpulseExtension` (registrace před transport commands).
 
 - [ ] **Fader soft takeover (pickup)** *(návrh – přenos Nektar logiky `L04F`)*
   Fader posílá hodnotu jen když je fyzická poloha blízko hodnotě v Bitwigu
