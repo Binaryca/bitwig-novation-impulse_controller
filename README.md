@@ -68,7 +68,9 @@ standing bugs and adds new features:
 
 - **Data knob preset browsing** for the selected device (Program Change mode)
 - Device on/off and selection on the track buttons in the plugin encoder
-  mode (the button LEDs follow the device enabled states)
+  mode: the buttons address the devices of the chain that contains the
+  selected device (they follow the selection level in nested project
+  structures), and the button LEDs follow the device enabled states
 - The display shows `Ready` and the detected model at startup, scene numbers,
   track and parameter names and numeric values
 - Optional persistent control labels and numeric value displays for the

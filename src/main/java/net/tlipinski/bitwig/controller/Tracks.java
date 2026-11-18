@@ -25,10 +25,12 @@ public class Tracks {
         this.cursorTrack = host.createCursorTrack(2, 0);
         this.cursorDevice = cursorTrack.createCursorDevice();
         this.cursorRemoteControlsPage = cursorDevice.createCursorRemoteControlsPage(8);
-        // The track buttons (CC 9-16) address the first eight devices of the
-        // cursor track chain in the plugin encoder mode. A track is a device
-        // chain, so the bank holds the top-level devices of the cursor track.
-        this.deviceBank = cursorTrack.createDeviceBank(Midi.BUTTON_LAST - Midi.BUTTON_FIRST);
+        // The track buttons (CC 9-16) address the devices of the chain that
+        // contains the selected device (the siblings of the cursor device):
+        // with a nested project structure (drum machine lanes, instrument
+        // layers) this follows the level the user is working on, the top
+        // chain of the track when nothing nested is selected.
+        this.deviceBank = cursorDevice.createSiblingsDeviceBank(Midi.BUTTON_LAST - Midi.BUTTON_FIRST);
 
         masterTrack.name().markInterested();
         for (int i = 0; i < trackBank.getSizeOfBank(); i++) {

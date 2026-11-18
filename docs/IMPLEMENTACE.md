@@ -204,8 +204,11 @@ Doplňková dokumentace: [HARDWARE.md](HARDWARE.md) (hardware a SysEx),
 - [x] **Device on/off v plugin režimu** *(v1.5 příprava, implementováno
   18.11.2026)*
   Tlačítka pod fadery (CC 9–16) v plugin režimu přepínají enabled state
-  prvních 8 zařízení top chainu cursor track (banka =
-  `cursorTrack.createDeviceBank(8)` — Track **je** DeviceChain; toggle =
+  prvních 8 zařízení chainu, **který obsahuje vybrané zařízení** (banka =
+  `cursorDevice.createSiblingsDeviceBank(8)` — sleduje úroveň výběru:
+  vnořený drum machine lane → zařízení lane, top-level → top chain; první
+  návrh `cursorTrack.createDeviceBank(8)` = top chain selhal na vnořených
+  projektech — Drum Machine = jediný top device, zbytek Empty), toggle =
   `isEnabled().toggle()`, protože `toggleEnabledState()` je deprecated od
   API 2 a v API 25 hází!), Shift +
   tlačítko vybere zařízení (`cursorDevice.selectDevice(device)`; Nektar

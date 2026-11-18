@@ -85,11 +85,17 @@ The eight track buttons below the faders, plus the master button, use CC
 
 ### Device mode (plugin encoder mode)
 
-In the **plugin encoder mode** the track buttons switch to the device chain
-of the cursor track, regardless of the mute/solo button mode:
+In the **plugin encoder mode** the track buttons switch to the devices
+around the selected device, regardless of the mute/solo button mode:
 
+- The buttons address the first eight devices of the chain that contains
+  the currently selected device. With a nested project structure (drum
+  machine lanes, instrument layers) they follow the level the selection is
+  on: select a device inside a lane and the buttons toggle that lane's
+  devices; select a top-level device and they address the track's main
+  chain.
 - Press a track button to toggle the enabled state of the corresponding
-  device (the first eight devices of the chain).
+  device.
 - LED **on** means the device is enabled; LED **off** means disabled.
 - **Shift + track button** selects that device — the plugin encoders, the
   display and the device navigation then follow it.
