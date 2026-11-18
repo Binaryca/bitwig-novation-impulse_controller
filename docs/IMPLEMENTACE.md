@@ -204,8 +204,10 @@ Doplňková dokumentace: [HARDWARE.md](HARDWARE.md) (hardware a SysEx),
 - [x] **Device on/off v plugin režimu** *(v1.5 příprava, implementováno
   18.11.2026)*
   Tlačítka pod fadery (CC 9–16) v plugin režimu přepínají enabled state
-  prvních 8 zařízení top chainu cursor track (`device.toggleEnabledState()`;
-  Track **je** DeviceChain → `cursorTrack.createDeviceBank(8)`), Shift +
+  prvních 8 zařízení top chainu cursor track (banka =
+  `cursorTrack.createDeviceBank(8)` — Track **je** DeviceChain; toggle =
+  `isEnabled().toggle()`, protože `toggleEnabledState()` je deprecated od
+  API 2 a v API 25 hází!), Shift +
   tlačítko vybere zařízení (`cursorDevice.selectDevice(device)`; Nektar
   LX61: XC_INST_K4TT0–7). Master button (CC 17) v plugin režimu no-op
   (pohlcen příkazem — nemůže překvapivě mutovat master). Prázdný slot →
@@ -218,7 +220,12 @@ Doplňková dokumentace: [HARDWARE.md](HARDWARE.md) (hardware a SysEx),
   Poučky: **javap ukazuje jen deklarované metody, ne zděděné** — první
   průzkum tvrdil, že Track nemá device chain banku; fakt: `Track extends
   Channel extends DeviceChain` → `createDeviceBank` zděděno (top chain!
-  bez nesting caveatu siblings banky); `ObjectProxy.exists()` na prázdné
+  bez nesting caveatu siblings banky); **deprecated metody z API 2 za
+  běhu v API 25 VYHODÍ výjimku** — `toggleEnabledState()` existuje v
+  rozhraní, ale při prvním stisku hodil „deprecated since API version 2:
+  Use isEnabled().toggle()" (stejná past jako `toggleClick()` u
+  metronomu); javap bez `-v` neukazuje `@Deprecated` → deklarované metody
+  vždy ověřovat proti hodnotovému API; `ObjectProxy.exists()` na prázdné
   sloty; markInterested přes bank proxy při initu (`name`, `isEnabled`,
   `exists`). 3 unit testy (`deviceIndex`).
   *Soubory:* `Tracks`, `commands/devices/DeviceOnOffCommand`,

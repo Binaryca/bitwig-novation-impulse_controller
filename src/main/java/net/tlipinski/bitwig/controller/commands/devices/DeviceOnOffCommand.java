@@ -15,6 +15,10 @@ import net.tlipinski.bitwig.controller.SysexSend;
  * the same way). The master button (CC 17) has no device and is swallowed,
  * so it cannot mute the master track by surprise in this mode.
  *
+ * <p>Toggling uses the {@code isEnabled().toggle()} value API: the classic
+ * {@code toggleEnabledState()} method is deprecated since API version 2 and
+ * throws with the required API 25.</p>
+ *
  * <p>The device name for the display is announced through value observers
  * because the API values update asynchronously after the action. The
  * enabled state is visible on the button LED (see DeviceOnOffObserver).</p>
@@ -77,7 +81,10 @@ public class DeviceOnOffCommand implements MidiCommand {
             controller.getTracks().getCursorDevice().selectDevice(device);
         } else {
             announceToggle = true;
-            device.toggleEnabledState();
+            // toggleEnabledState() is deprecated since API version 2 and
+            // throws with the required API 25, so the value API is used (the
+            // same reason the metronome uses isMetronomeEnabled().toggle()).
+            device.isEnabled().toggle();
         }
     }
 
