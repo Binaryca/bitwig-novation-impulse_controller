@@ -71,12 +71,6 @@ public class DeviceOnOffCommand implements MidiCommand {
         }
 
         Device device = controller.getTracks().getDeviceBank().getDevice(index);
-        // Diagnostic: remove after the device button behaviour is verified.
-        if (controller.getPreferences().debug()) {
-            controller.getHost().errorln("DeviceBtn[" + index + "]: exists="
-                    + device.exists().get() + " enabled=" + device.isEnabled().get()
-                    + " name='" + device.name().get() + "'");
-        }
         if (!device.exists().get()) {
             sysexSend.displayText("Empty");
             return;
