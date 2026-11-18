@@ -4,12 +4,15 @@ import net.tlipinski.bitwig.controller.Controller;
 import net.tlipinski.bitwig.controller.EncoderMode;
 import net.tlipinski.bitwig.controller.Midi;
 import net.tlipinski.bitwig.controller.MidiCommand;
+import net.tlipinski.bitwig.controller.MidiSend;
 import net.tlipinski.bitwig.controller.SysexSend;
+import net.tlipinski.bitwig.controller.observers.callbacks.RefreshAllLightsCallback;
 
 public class EncoderPluginModeCommand implements MidiCommand {
 
-    public EncoderPluginModeCommand(Controller controller, SysexSend sysexSend) {
+    public EncoderPluginModeCommand(Controller controller, MidiSend midiSend, SysexSend sysexSend) {
         this.controller = controller;
+        this.midiSend = midiSend;
         this.sysexSend = sysexSend;
     }
 
@@ -24,9 +27,12 @@ public class EncoderPluginModeCommand implements MidiCommand {
     @Override
     public void handle(int data1, int data2) {
         controller.changeEncoderMode(EncoderMode.PLUGIN);
+        // The track buttons switch meaning with the mode: re-sync their LEDs.
+        new RefreshAllLightsCallback(controller, midiSend).valueChanged(controller.getButtonsMode());
         sysexSend.displayText("Plugin");
     }
 
     private final Controller controller;
+    private final MidiSend midiSend;
     private final SysexSend sysexSend;
 }

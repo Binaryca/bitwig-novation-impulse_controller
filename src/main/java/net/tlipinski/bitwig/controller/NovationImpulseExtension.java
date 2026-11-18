@@ -79,12 +79,13 @@ public class NovationImpulseExtension extends ControllerExtension {
                 new NoOpCommand(),
                 new TrackPreviousCommand(controller, sysexSend),
                 new TrackNextCommand(controller, sysexSend),
-                new EncoderPluginModeCommand(controller, sysexSend),
+                new EncoderPluginModeCommand(controller, midiSend, sysexSend),
                 new EncoderMixerModeCommand(controller, midiSend, sysexSend)
         );
 
         new MuteObserver(controller, midiSend);
         new SoloObserver(controller, midiSend);
+        new DeviceOnOffObserver(controller, midiSend);
         new ChannelCountObserver(controller, midiSend);
         new TransportLedObserver(host.createTransport(), midiSend);
         new EncoderBankIndexObserver(controller, sysexSend);

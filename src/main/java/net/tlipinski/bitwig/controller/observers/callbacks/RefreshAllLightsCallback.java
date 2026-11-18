@@ -1,8 +1,12 @@
 package net.tlipinski.bitwig.controller.observers.callbacks;
 
 import com.bitwig.extension.callback.ObjectValueChangedCallback;
+import com.bitwig.extension.controller.api.Device;
+import com.bitwig.extension.controller.api.DeviceBank;
 import com.bitwig.extension.controller.api.Track;
 import net.tlipinski.bitwig.controller.ButtonsMode;
+import net.tlipinski.bitwig.controller.EncoderMode;
+import net.tlipinski.bitwig.controller.Midi;
 import net.tlipinski.bitwig.controller.MidiSend;
 import net.tlipinski.bitwig.controller.Controller;
 
@@ -19,6 +23,14 @@ public class RefreshAllLightsCallback implements ObjectValueChangedCallback<Butt
 
     @Override
     public void valueChanged(ButtonsMode newValue) {
+        // In the plugin encoder mode the buttons address devices, so their
+        // LEDs show the device enabled states regardless of the mute/solo
+        // button mode.
+        if (controller.getEncoderMode() == EncoderMode.PLUGIN) {
+            refreshDeviceLights();
+            return;
+        }
+
         List<Track> all = controller.getTracks().getAll();
         for (int i = 0; i < all.size(); i++) {
             Track track = all.get(i);
@@ -30,6 +42,17 @@ public class RefreshAllLightsCallback implements ObjectValueChangedCallback<Butt
                 handleSolo(i, track.solo().get());
             }
         }
+    }
+
+    private void refreshDeviceLights() {
+        DeviceBank bank = controller.getTracks().getDeviceBank();
+        int count = Midi.BUTTON_LAST - Midi.BUTTON_FIRST;
+        for (int i = 0; i < count; i++) {
+            Device device = bank.getDevice(i);
+            midiSend.light(i, device.exists().get() && device.isEnabled().get());
+        }
+        // The master button has no device: its LED goes off in this mode.
+        midiSend.light(count, false);
     }
 
     private void handleMute(int idx, boolean mute) {

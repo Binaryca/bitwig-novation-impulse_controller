@@ -2,6 +2,7 @@ package net.tlipinski.bitwig.controller.observers.callbacks;
 
 import com.bitwig.extension.callback.BooleanValueChangedCallback;
 import net.tlipinski.bitwig.controller.ButtonsMode;
+import net.tlipinski.bitwig.controller.EncoderMode;
 import net.tlipinski.bitwig.controller.MidiSend;
 import net.tlipinski.bitwig.controller.Controller;
 
@@ -18,7 +19,10 @@ public class SoloCallback implements BooleanValueChangedCallback {
 
     @Override
     public void valueChanged(boolean solo) {
-        if (controller.getButtonsMode() == ButtonsMode.SOLO) {
+        // In the plugin encoder mode the buttons address devices, so their
+        // LEDs show the device enabled states (see DeviceOnOffObserver).
+        if (controller.getButtonsMode() == ButtonsMode.SOLO
+                && controller.getEncoderMode() != EncoderMode.PLUGIN) {
             if (controller.getTracks().isNotEmpty(idx)) {
                 midiSend.light(idx, solo);
             } else {
