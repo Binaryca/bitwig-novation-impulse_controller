@@ -5,6 +5,7 @@ import com.bitwig.extension.controller.api.ControllerHost;
 import com.bitwig.extension.controller.api.NoteInput;
 import net.tlipinski.bitwig.controller.commands.*;
 import net.tlipinski.bitwig.controller.commands.clips.*;
+import net.tlipinski.bitwig.controller.commands.devices.*;
 import net.tlipinski.bitwig.controller.commands.encoders.*;
 import net.tlipinski.bitwig.controller.commands.mixer.*;
 import net.tlipinski.bitwig.controller.commands.transport.*;
@@ -49,6 +50,7 @@ public class NovationImpulseExtension extends ControllerExtension {
                 new FaderCursorCommand(controller, midiSend, sysexSend, faderSoftTakeover),
                 new FaderCommand(controller, midiSend, sysexSend, faderSoftTakeover),
                 new DataKnobCommand(controller),
+                new DeviceOnOffCommand(controller, sysexSend),
                 new ClearAllMutesSolosCommand(controller, midiSend, sysexSend),
                 new ButtonsModeCommand(controller, midiSend, sysexSend),
                 new SingleMuteCommand(controller, midiSend, sysexSend),

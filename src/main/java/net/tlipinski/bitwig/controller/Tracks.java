@@ -3,6 +3,8 @@ package net.tlipinski.bitwig.controller;
 import com.bitwig.extension.controller.api.ControllerHost;
 import com.bitwig.extension.controller.api.CursorRemoteControlsPage;
 import com.bitwig.extension.controller.api.CursorTrack;
+import com.bitwig.extension.controller.api.Device;
+import com.bitwig.extension.controller.api.DeviceBank;
 import com.bitwig.extension.controller.api.MasterTrack;
 import com.bitwig.extension.controller.api.PinnableCursorDevice;
 import com.bitwig.extension.controller.api.SceneBank;
@@ -23,12 +25,24 @@ public class Tracks {
         this.cursorTrack = host.createCursorTrack(2, 0);
         this.cursorDevice = cursorTrack.createCursorDevice();
         this.cursorRemoteControlsPage = cursorDevice.createCursorRemoteControlsPage(8);
+        // The track buttons (CC 9-16) address the first eight devices of the
+        // cursor track chain in the plugin encoder mode. A track is a device
+        // chain, so the bank holds the top-level devices of the cursor track.
+        this.deviceBank = cursorTrack.createDeviceBank(Midi.BUTTON_LAST - Midi.BUTTON_FIRST);
 
         masterTrack.name().markInterested();
         for (int i = 0; i < trackBank.getSizeOfBank(); i++) {
             Track channel = trackBank.getItemAt(i);
             channel.name().markInterested();
             channel.trackType().markInterested();
+        }
+        // Mark through the bank item proxies: they exist even when the
+        // underlying chain is shorter (an unmarked value throws on get()).
+        for (int i = 0; i < deviceBank.getSizeOfBank(); i++) {
+            Device device = deviceBank.getDevice(i);
+            device.name().markInterested();
+            device.isEnabled().markInterested();
+            device.exists().markInterested();
         }
     }
 
@@ -84,6 +98,10 @@ public class Tracks {
         return cursorDevice;
     }
 
+    public DeviceBank getDeviceBank() {
+        return deviceBank;
+    }
+
     private boolean isEmpty(Track track) {
         String type = track.trackType().get();
         return type.isEmpty() || "Master".equals(type);
@@ -94,4 +112,5 @@ public class Tracks {
     private final CursorRemoteControlsPage cursorRemoteControlsPage;
     private final CursorTrack cursorTrack;
     private final PinnableCursorDevice cursorDevice;
+    private final DeviceBank deviceBank;
 }
