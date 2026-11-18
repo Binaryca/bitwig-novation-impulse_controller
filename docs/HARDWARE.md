@@ -42,6 +42,36 @@ The CC mapping actually used by this extension is documented in
 - Six transport buttons: **Rewind, Fast-Forward, Stop, Play, Loop, Record**;
   they are always active and send CC or MMC depending on the Setup setting
 
+### Control numbering (Novation Impulse User Guide v5)
+
+The user guide numbers the top panel controls 1-18; test instructions in
+this repository use those numbers and bold names. Source:
+[Impulse user guide v5](https://fael-downloads-prod.focusrite.com/customer/prod/downloads/impulse_user_guide_v5_en.pdf).
+
+| No. | Control (guide naming) | Role in this extension |
+| ---: | --- | --- |
+| 1 | 8 x rotary encoders | Plugin mode: device parameters; Mixer mode: pan/sends |
+| 2 | 9 x faders (49/61; a single fader on 25) | Track/master volume with soft takeover |
+| 3 | 9 x press-buttons under the faders | Mutes/Solos (mixer mode), device on/off + select (plugin mode) |
+| 4 | 8 x drum pads | Clip launcher (Roll+Arp together enables Clip Launch mode) |
+| 5 | Mod wheel | Note input (modulation) |
+| 6 | Multifunction LCD | Track/parameter/preset display |
+| 7 | `+` / `-` buttons | Hardware menu navigation only |
+| 8 | Template Edit buttons: **Keyboard**, **Controls**, **Zones**, **MIDI Chan**, **Setup**, **Shift** | Shift gates the secondary functions |
+| 11 | **Plug-in** / **MIDI** buttons (encoder section) | Encoder mode: Plugin / (Mixer = Plug-in+MIDI pressed together) / MIDI |
+| 12 | **Mixer** / **MIDI** buttons (fader section) | Fader mode: Mixer / MIDI |
+| 13 | **Mute/Solo** button | Toggles the per-fader buttons between Mutes and Solos |
+| 14 | **Data knob** (press = Enter) | Preset browsing while Program Change mode (Shift + MIDI Chan) is active |
+| 15 | **Roll** and **Arp** buttons | Pad modes |
+| 18 | Transport: **Rwd**, **FFwd**, **Stop**, **Play**, **Loop**, **Rec** | Transport; Rwd/FFwd scrub or device navigation; Mix-panel scene control |
+
+CC numbers used by the shipped template (channel 1 unless noted): encoders
+`0-7`, faders `0-8`, the press-buttons `9-16` and the master button `17`,
+**Shift** `13` (channel 2), encoder mode `9` (Mixer, = Plug-in+MIDI
+together) and `10` (Plugin, channel 2), **Mute/Solo** `34`, track bank
+`35`/`36`, track next/previous `37`/`38`, transport `27`-`32`, the data
+knob sends Program Change on channel 1.
+
 ### Rear panel
 
 - USB-B port (bus powered), optional DC power socket
