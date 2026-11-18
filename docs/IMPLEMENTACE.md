@@ -269,6 +269,15 @@ Doplňková dokumentace: [HARDWARE.md](HARDWARE.md) (hardware a SysEx),
   b) Plug-in Presets tab pro VST zařízení – teď se vždy volá první tab
   obsahující „Preset" (= *Bitwig Presets*); u pluginů by byl správný
   *Plug-in Presets* (rozpoznat podle typu zařízení).
+  ⚠️ Experiment `CursorRemoteControlsPage.createPresetPage()` (18.11.):
+  po volání zůstal `pageCount()=0` a pageNames prázdné celou session,
+  page switching mrtvý → dead end (as of API 25, javadoc jen „Creates a
+  new preset page"). Zbývá jen cesta B (content type v browseru) — ta
+  ale u VST commituje přes **replace insertion point = reload pluginu**
+  (velké pluginy = sekundy padu audio), a závisí na tom, že tab „Plugin
+  Presets" má pro daný plugin výsledky (VST3 často program bank nemají,
+  presety spravují vlastní GUI). Rozhoduje zero-code probe: ručně otevřít
+  replace browser na VST a kouknout na tab.
   c) Experiment: stisk data knobu v PC režimu jako commit – zjistit, zda
   press něco vysílá; „otoč → stiskni = nahrát" by bylo přesnější UX
   než časovač 1,2 s.
