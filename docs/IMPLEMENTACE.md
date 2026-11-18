@@ -201,7 +201,7 @@ Doplňková dokumentace: [HARDWARE.md](HARDWARE.md) (hardware a SysEx),
   `FaderCursorCommand`, `TrackBankIndexObserver`, `TrackBankUpCommand`,
   `TrackBankDownCommand`, `NovationImpulseExtension`.
 
-- [x] **Device on/off v plugin režimu** *(v1.5 příprava, implementováno
+- [x] **Device on/off v plugin režimu** *(v1.5, implementováno a otestováno
   18.11.2026)*
   Tlačítka pod fadery (CC 9–16) v plugin režimu přepínají enabled state
   prvních 8 zařízení chainu, **který obsahuje vybrané zařízení** (banka =
@@ -284,6 +284,9 @@ Doplňková dokumentace: [HARDWARE.md](HARDWARE.md) (hardware a SysEx),
 - [x] **Release 1.4** *(17.11.2026)* – tag `v1.4` na `myfork/improvements`,
   changelog v README (Changes in 1.4), release + upload `.bwextension`
   vytvořeny přes GitHub API (uložený push token).
+- [x] **Release 1.5** *(18.11.2026)* – tag `v1.5` na `myfork/improvements`,
+  changelog v README (Changes in 1.5), release + upload `.bwextension`
+  vytvořeny přes GitHub API.
 - [x] **Verze** – bump na 1.4 (pom.xml).
 
 ## Testovací checklist (hardware)

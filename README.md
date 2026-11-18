@@ -119,6 +119,22 @@ standing bugs and adds new features:
 - SysEx template sender in the Bitwig controller preferences, optional
   automatic template send at startup
 
+## Changes in 1.5
+
+- Added **device on/off on the track buttons in the plugin encoder mode**:
+  a button press toggles the enabled state of the corresponding device,
+  **Shift + button selects** it (like the official Nektar scripts). The
+  buttons address the devices of the chain that contains the selected
+  device, so they follow the selection level in nested project structures
+  (drum machine lanes, instrument layers)
+- The track button **LEDs follow the device enabled states** in the plugin
+  mode and re-sync when the encoder mode is switched; mute/solo LEDs keep
+  working in the mixer mode
+- Fixed the device toggle using an API-version-2 deprecated method that
+  threw at runtime (the value API `isEnabled().toggle()` is used instead)
+- Controller script **dispatch decisions are logged to the log file** when
+  debug logging is enabled (which command handled each MIDI message)
+
 ## Changes in 1.4
 
 - Added **fader soft takeover (pickup)**: the faders are not motorised, so
