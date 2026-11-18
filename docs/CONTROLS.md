@@ -83,6 +83,22 @@ The eight track buttons below the faders, plus the master button, use CC
 | Track 1-8 | `B0 9` - `B0 16` |
 | Master | `B0 17` |
 
+### Device mode (plugin encoder mode)
+
+In the **plugin encoder mode** the track buttons switch to the device chain
+of the cursor track, regardless of the mute/solo button mode:
+
+- Press a track button to toggle the enabled state of the corresponding
+  device (the first eight devices of the chain).
+- LED **on** means the device is enabled; LED **off** means disabled.
+- **Shift + track button** selects that device — the plugin encoders, the
+  display and the device navigation then follow it.
+- The master button does nothing in this mode (there is no ninth device).
+- An empty chain slot shows `Empty` on the display.
+
+Switching the encoder mode re-syncs the button LEDs (device states in the
+plugin mode, mute/solo in the mixer mode).
+
 ### Mute mode
 
 - Press a track button to toggle mute for that track.

@@ -67,6 +67,8 @@ standing bugs and adds new features:
 **Devices, presets and display**
 
 - **Data knob preset browsing** for the selected device (Program Change mode)
+- Device on/off and selection on the track buttons in the plugin encoder
+  mode (the button LEDs follow the device enabled states)
 - The display shows `Ready` and the detected model at startup, scene numbers,
   track and parameter names and numeric values
 - Optional persistent control labels and numeric value displays for the
@@ -101,6 +103,9 @@ standing bugs and adds new features:
   (Shift + mute/solo mode button)
 - Device navigation in the plugin encoder mode: rewind/fast-forward select
   the previous/next device of the cursor track
+- Device on/off on the track buttons in the plugin encoder mode, with the
+  button LEDs following the device enabled states (Shift + button selects
+  the device)
 - Arranger position scrub with the transport rewind/fast-forward buttons
   (one beat per click, continuous while held)
 - Metronome toggle (Shift + Play) and project save (Shift + Stop)
@@ -212,6 +217,7 @@ Select this template on the Impulse before using the controller script.
 | Faders 1-8 | Track volume |
 | Master fader | Master volume (Impulse 49/61; cursor track on Impulse 25) |
 | Track buttons 1-8 | Mute or solo, depending on the button mode |
+| Track buttons 1-8 in Plugin mode | Device on/off (Shift + button selects the device) |
 | Shift + track button | Exclusive mute/solo |
 | Encoders 1-8 | Selected device parameters (Plugin mode) or pan/sends (Mixer mode) |
 | Encoder mode buttons | Switch between Plugin and Mixer encoder modes |

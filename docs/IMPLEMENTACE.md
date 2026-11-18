@@ -201,12 +201,30 @@ Doplňková dokumentace: [HARDWARE.md](HARDWARE.md) (hardware a SysEx),
   `FaderCursorCommand`, `TrackBankIndexObserver`, `TrackBankUpCommand`,
   `TrackBankDownCommand`, `NovationImpulseExtension`.
 
-- [ ] **Device on/off v plugin režimu** *(návrh – porovnání s Nektar LX61)*
+- [x] **Device on/off v plugin režimu** *(v1.5 příprava, implementováno
+  18.11.2026)*
   Tlačítka pod fadery (CC 9–16) v plugin režimu přepínají enabled state
-  zařízení v chainu (`device.toggleEnabledState()`), Shift + tlačítko
-  vybere zařízení v chainu. Nektar: XC_INST_K4TT0–7 (8 tlačítek = 8
-  zařízení, Shift = selectDevice).
-  *Soubory:* `commands/`, `Tracks`, `CursorDevice`.
+  prvních 8 zařízení top chainu cursor track (`device.toggleEnabledState()`;
+  Track **je** DeviceChain → `cursorTrack.createDeviceBank(8)`), Shift +
+  tlačítko vybere zařízení (`cursorDevice.selectDevice(device)`; Nektar
+  LX61: XC_INST_K4TT0–7). Master button (CC 17) v plugin režimu no-op
+  (pohlcen příkazem — nemůže překvapivě mutovat master). Prázdný slot →
+  displej `Empty`. LED tlačítek: v plugin režimu = enabled state
+  (`DeviceOnOffObserver`), mute/solo callbacky dostaly gate
+  `encoderMode != PLUGIN`, refresh LED při přepnutí encoder režimu
+  (obě směry, `RefreshAllLightsCallback` má větev pro plugin). Displej:
+  název zařízení (announce pattern — select = observer na
+  `cursorDevice.name()`, toggle = observer na `isEnabled()` bank itemu).
+  Poučky: **javap ukazuje jen deklarované metody, ne zděděné** — první
+  průzkum tvrdil, že Track nemá device chain banku; fakt: `Track extends
+  Channel extends DeviceChain` → `createDeviceBank` zděděno (top chain!
+  bez nesting caveatu siblings banky); `ObjectProxy.exists()` na prázdné
+  sloty; markInterested přes bank proxy při initu (`name`, `isEnabled`,
+  `exists`). 3 unit testy (`deviceIndex`).
+  *Soubory:* `Tracks`, `commands/devices/DeviceOnOffCommand`,
+  `DeviceOnOffCommandTest`, `observers/DeviceOnOffObserver`, `MuteCallback`,
+  `SoloCallback`, `RefreshAllLightsCallback`, `EncoderPluginModeCommand`,
+  `EncoderMixerModeCommand`, `NovationImpulseExtension`.
 
 ## Priorita 2 – experimenty a větší změny
 
@@ -254,8 +272,8 @@ Doplňková dokumentace: [HARDWARE.md](HARDWARE.md) (hardware a SysEx),
 - [ ] **CI** – GitHub Actions workflow (JDK 21 + Maven, artefakt `.bwextension`),
   případně nahradit `circle.yml`.
 - [x] **Release 1.4** *(17.11.2026)* – tag `v1.4` na `myfork/improvements`,
-  changelog v README (Changes in 1.4). Upload `.bwextension` k release na
-  webu zůstává na uživateli (gh CLI není k dispozici).
+  changelog v README (Changes in 1.4), release + upload `.bwextension`
+  vytvořeny přes GitHub API (uložený push token).
 - [x] **Verze** – bump na 1.4 (pom.xml).
 
 ## Testovací checklist (hardware)
