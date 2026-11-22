@@ -143,8 +143,6 @@ public class DataKnobCommand implements MidiCommand {
                         cursorDevice.replaceDeviceInsertionPoint().browse();
                         browseSentAt = now;
                         browseAttempts++;
-                        contentTypeSet = false;
-                        contentTypeAttempts = 0;
                         // The browser previews every preset the selection
                         // moves to; during a fast sweep that loads device
                         // state per step and grows the Bitwig JVM heap,
