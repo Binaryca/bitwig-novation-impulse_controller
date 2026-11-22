@@ -266,18 +266,20 @@ Doplňková dokumentace: [HARDWARE.md](HARDWARE.md) (hardware a SysEx),
 - [ ] **Data knob – drobná vylepšení** *(poznámky z implementace 16.11.2026)*
   a) Preference *Preview při otáčení* – náhledy (audition) jsou teď natvrdo
   vypnuté kvůli paměti (OOM crash); volitelný přepínač, default off.
-  b) Plug-in Presets tab pro VST zařízení – teď se vždy volá první tab
-  obsahující „Preset" (= *Bitwig Presets*); u pluginů by byl správný
-  *Plug-in Presets* (rozpoznat podle typu zařízení).
-  ⚠️ Experiment `CursorRemoteControlsPage.createPresetPage()` (18.11.):
-  po volání zůstal `pageCount()=0` a pageNames prázdné celou session,
-  page switching mrtvý → dead end (as of API 25, javadoc jen „Creates a
-  new preset page"). Zbývá jen cesta B (content type v browseru) — ta
-  ale u VST commituje přes **replace insertion point = reload pluginu**
-  (velké pluginy = sekundy padu audio), a závisí na tom, že tab „Plugin
-  Presets" má pro daný plugin výsledky (VST3 často program bank nemají,
-  presety spravují vlastní GUI). Rozhoduje zero-code probe: ručně otevřít
-  replace browser na VST a kouknout na tab.
+  b) Plug-in Presets tab pro VST zařízení – **implementováno 22.11.**
+  (`DataKnobCommand.targetIndex` + `isPluginDevice()`): plugin device →
+  tab „Plug-in Presets" když browser nabízí, jinak fallback na dnešní
+  chování; nativní device tab skipuje (i kdyby byl první v pořadí).
+  Klíčové zjištění (User Guide browsers + web): **„Plug-in Presets" je
+  file-based** — H2P (u-he), FXP/FXB (VST2), VSTPRESET (VST3), CLAP
+  vendor formáty ze sound locations; interní presety pluginu (Pigments
+  GUI) nejsou indexovatelné vůbec → pro ty je most „Save VST preset"
+  (.vstpreset do sound location). Ostatní kontrolery (DrivenByMoss)
+  používají stejný PopupBrowser; přímý výběr presetů v API neexistuje
+  (Bitwish wishlist 2024). Experiment `createPresetPage()` (18.11.):
+  pageCount zůstal 0, page model se rozbil → dead end. Zbývá ověřit na
+  hardware s reálnými soubory (u-he/LX480, uložený .vstpreset) — když
+  tab nebude mít výsledky, chování zůstane beze změny (fallback).
   c) Experiment: stisk data knobu v PC režimu jako commit – zjistit, zda
   press něco vysílá; „otoč → stiskni = nahrát" by bylo přesnější UX
   než časovač 1,2 s.

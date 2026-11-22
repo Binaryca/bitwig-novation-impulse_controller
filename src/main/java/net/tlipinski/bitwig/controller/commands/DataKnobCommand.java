@@ -15,8 +15,11 @@ import net.tlipinski.bitwig.controller.MidiCommand;
  * sessions and the old preset API (Device.loadPreset, switchToNextPreset,
  * ...) are not available with the required API version 25. The browser is
  * opened at the cursor device's replace insertion point (which opens the
- * preset selection for that device), the Preset content type is selected
- * when it is not already active, and the highlighted preset is loaded with
+ * preset selection for that device), the preset content type is selected -
+ * the "Plug-in Presets" tab for VST/AU/CLAP devices (the indexed preset
+ * FILES of the plug-in; the presets stored inside the plug-in's own GUI
+ * are not reachable through Bitwig) and the Bitwig presets for native
+ * devices - and the highlighted preset is loaded with
  * {@code commit()}.</p>
  *
  * <p>The pending knob steps are drained with the browser's own file
@@ -100,6 +103,7 @@ public class DataKnobCommand implements MidiCommand {
 
         browser.selectedContentTypeIndex().markInterested();
         browser.contentTypeNames().markInterested();
+        cursorDevice.deviceType().markInterested();
 
         controller.getHost().scheduleTask(this::tick, TICK_MS);
     }
@@ -218,20 +222,14 @@ public class DataKnobCommand implements MidiCommand {
     }
 
     /**
-     * Selects the Preset content type in the popup browser when it is not
+     * Selects the preset content type in the popup browser when it is not
      * already selected; returns true when done (or when the content types
      * are not reported, in which case the type the insertion point opened
      * with is kept), false when the change should be retried.
      */
     private boolean selectPresetContentType() {
         String[] names = browser.contentTypeNames().get();
-        int target = -1;
-        for (int i = 0; i < names.length; i++) {
-            if (names[i].toLowerCase().contains("preset")) {
-                target = i;
-                break;
-            }
-        }
+        int target = targetIndex(names, isPluginDevice());
         if (target < 0) {
             // Content type names may not be reported in newer Bitwig
             // versions; keep the type the insertion point opened with.
@@ -242,6 +240,59 @@ public class DataKnobCommand implements MidiCommand {
         }
         browser.selectedContentTypeIndex().set(target);
         return ++contentTypeAttempts >= 5;
+    }
+
+    /**
+     * Whether the cursor device is a plug-in (VST, AU or CLAP): those browse
+     * the plug-in preset files when the browser offers the tab.
+     */
+    private boolean isPluginDevice() {
+        String type = cursorDevice.deviceType().get().toLowerCase();
+        boolean plugin = type.startsWith("vst") || type.startsWith("au")
+                || type.startsWith("clap") || type.startsWith("plugin");
+        // Diagnostic: remove after the content type selection is verified.
+        if (controller.getPreferences().debug()) {
+            controller.getHost().errorln("DataKnob: type='" + type + "' plugin=" + plugin
+                    + " names=" + String.join(" | ", browser.contentTypeNames().get()));
+        }
+        return plugin;
+    }
+
+    /**
+     * Resolves the content type index to browse presets in: plug-in devices
+     * prefer the "Plug-in Presets" tab (the indexed preset FILES of the
+     * plug-in - H2P, FXP, FXB, VSTPRESET -; the presets kept inside the
+     * plug-in's own GUI are not reachable through Bitwig at all), other
+     * devices browse the Bitwig presets and skip a plug-in tab. Returns -1
+     * when nothing matches (the caller then keeps the type the insertion
+     * point opened with).
+     */
+    static int targetIndex(String[] names, boolean pluginDevice) {
+        int firstPreset = -1;
+        int pluginPreset = -1;
+        for (int i = 0; i < names.length; i++) {
+            // Normalized so the "Plug-in" naming variant matches too.
+            String name = names[i].toLowerCase().replaceAll("[^a-z]", "");
+            if (!name.contains("preset")) {
+                continue;
+            }
+            if (firstPreset < 0) {
+                firstPreset = i;
+            }
+            if (pluginPreset < 0 && name.contains("plugin")) {
+                pluginPreset = i;
+            }
+        }
+        if (pluginDevice) {
+            return pluginPreset >= 0 ? pluginPreset : firstPreset;
+        }
+        for (int i = 0; i < names.length; i++) {
+            String name = names[i].toLowerCase().replaceAll("[^a-z]", "");
+            if (name.contains("preset") && !name.contains("plugin")) {
+                return i;
+            }
+        }
+        return firstPreset;
     }
 
     /**

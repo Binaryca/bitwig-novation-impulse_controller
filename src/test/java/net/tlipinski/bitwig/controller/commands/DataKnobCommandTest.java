@@ -25,4 +25,40 @@ class DataKnobCommandTest {
         // 1 -> 127 is two steps down
         assertEquals(-2, DataKnobCommand.delta(1, 127));
     }
+
+    @Test
+    void pluginDevicePrefersThePluginPresetTab() {
+        String[] names = {"Bitwig Presets", "Plug-in Presets", "Samples"};
+        assertEquals(1, DataKnobCommand.targetIndex(names, true));
+    }
+
+    @Test
+    void pluginDeviceFallsBackToAnyPresetTab() {
+        String[] names = {"Bitwig Presets", "Samples"};
+        assertEquals(0, DataKnobCommand.targetIndex(names, true));
+    }
+
+    @Test
+    void nonPluginDeviceSkipsThePluginPresetTab() {
+        String[] names = {"Bitwig Presets", "Plug-in Presets", "Samples"};
+        assertEquals(0, DataKnobCommand.targetIndex(names, false));
+    }
+
+    @Test
+    void nonPluginDeviceSkipsThePluginPresetTabEvenWhenItComesFirst() {
+        String[] names = {"Plug-in Presets", "Bitwig Presets", "Samples"};
+        assertEquals(1, DataKnobCommand.targetIndex(names, false));
+    }
+
+    @Test
+    void nonPluginDeviceFallsBackToThePluginTabWhenItIsTheOnlyOne() {
+        String[] names = {"Plug-in Presets", "Samples"};
+        assertEquals(0, DataKnobCommand.targetIndex(names, false));
+    }
+
+    @Test
+    void withoutPresetTabsNothingIsSelected() {
+        assertEquals(-1, DataKnobCommand.targetIndex(new String[]{"Samples"}, true));
+        assertEquals(-1, DataKnobCommand.targetIndex(new String[]{}, false));
+    }
 }

@@ -100,7 +100,8 @@ standing bugs and adds new features:
 - Track bank paging and cursor-track selection
 - Impulse display feedback (track names, parameter names, page names and ranges)
 - Data knob as a preset browser for the selected device (Program Change mode:
-  Shift + MIDI Chan)
+  Shift + MIDI Chan); plug-in devices browse the indexed plug-in preset
+  files (H2P/FXP/FXB/VSTPRESET) when the browser offers the tab
 - Undo/redo (Shift + rewind/fast-forward) and clearing all mutes/solos
   (Shift + mute/solo mode button)
 - Device navigation in the plugin encoder mode: rewind/fast-forward select
