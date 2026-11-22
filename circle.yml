@@ -1,9 +1,0 @@
-machine:
-  java:
-    version: openjdk11
-
-test:
-  override:
-    - mvn clean package
-  post:
-    - cp target/NovationImpulse.bwextension $CIRCLE_ARTIFACTS
