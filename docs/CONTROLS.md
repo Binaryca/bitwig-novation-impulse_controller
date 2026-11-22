@@ -253,13 +253,14 @@ turn, directly at the loaded preset. The program number shown by the
 hardware is only used as relative movement and does not correspond to the
 preset index.
 
-**Plug-in devices** (VST, AU, CLAP) browse the **Plug-in Presets** tab when
-the browser offers it. That tab lists the plug-in preset FILES indexed by
-Bitwig (H2P, FXP, FXB, VSTPRESET and CLAP vendor formats found in the sound
-locations) - the presets kept inside the plug-in's own GUI are not visible
-to Bitwig at all, so for those plug-ins save the states you want to reach
-with **Save VST preset** into a sound location. Native devices browse the
-Bitwig presets.
+The replace browser opens scoped to the presets matching that device and
+**remembers the last used preset content type per device**: Bitwig Presets
+for native devices, **Plug-in Presets** for plug-ins when you want their
+indexed preset FILES (H2P, FXP, FXB, VSTPRESET and CLAP vendor formats from
+the sound locations). The presets kept inside the plug-in's own GUI are
+not visible to Bitwig at all - for those plug-ins save the states you want
+to reach with **Save VST preset** into a sound location, then browse them
+here.
 
 Note: the old preset API (`Device.loadPreset`) is unavailable when the
 extension requires API version 25, so the popup browser API is used instead.

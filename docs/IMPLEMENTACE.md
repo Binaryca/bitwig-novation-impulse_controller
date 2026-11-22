@@ -266,20 +266,24 @@ Doplňková dokumentace: [HARDWARE.md](HARDWARE.md) (hardware a SysEx),
 - [ ] **Data knob – drobná vylepšení** *(poznámky z implementace 16.11.2026)*
   a) Preference *Preview při otáčení* – náhledy (audition) jsou teď natvrdo
   vypnuté kvůli paměti (OOM crash); volitelný přepínač, default off.
-  b) Plug-in Presets tab pro VST zařízení – **implementováno 22.11.**
-  (`DataKnobCommand.targetIndex` + `isPluginDevice()`): plugin device →
-  tab „Plug-in Presets" když browser nabízí, jinak fallback na dnešní
-  chování; nativní device tab skipuje (i kdyby byl první v pořadí).
-  Klíčové zjištění (User Guide browsers + web): **„Plug-in Presets" je
-  file-based** — H2P (u-he), FXP/FXB (VST2), VSTPRESET (VST3), CLAP
-  vendor formáty ze sound locations; interní presety pluginu (Pigments
-  GUI) nejsou indexovatelné vůbec → pro ty je most „Save VST preset"
-  (.vstpreset do sound location). Ostatní kontrolery (DrivenByMoss)
-  používají stejný PopupBrowser; přímý výběr presetů v API neexistuje
-  (Bitwish wishlist 2024). Experiment `createPresetPage()` (18.11.):
-  pageCount zůstal 0, page model se rozbil → dead end. Zbývá ověřit na
-  hardware s reálnými soubory (u-he/LX480, uložený .vstpreset) — když
-  tab nebude mít výsledky, chování zůstane beze změny (fallback).
+  b) Plug-in Presets tab pro VST zařízení – **vyřešeno bez kódu (22.11.)**,
+  forcing content type odstraněn. Hardware zjištění: `Device.deviceType()`
+  vrací **třídu** device (`'instrument'` i pro VST3 instrumenty), ne
+  technologii → detekce pluginu tímto nejde; a
+  `PopupBrowser.selectedContentTypeIndex().set()` se v Bitwig 6
+  **neprojeví** (6× set a tab zůstal na Plug-in Presets) → forcing byl
+  no-op. Bitwig to řeší sám: replace browser se otevírá **předfiltrován
+  na presety daného device** a **pamatuje si poslední content type per
+  kontext** (User Guide: browsers) → knob kutá aktivní preset tab
+  (Bitwig Presets / Plug-in Presets dle volby v UI). Plug-in Presets =
+  **file-based** (H2P/FXP/FXB/VSTPRESET/CLAP ze sound locations; interní
+  presety pluginu nejsou indexovatelné) → pro vlastní stavy GUI-managed
+  pluginů je most „Save VST preset" (.vstpreset do sound location).
+  Ostatní kontrolery (DrivenByMoss) používají tentýž browser; přímý
+  výběr presetů v API neexistuje (Bitwish wishlist 2024). Experiment
+  `createPresetPage()` (18.11.): page model se rozbil → dead end.
+  Poučky: deviceType() = třída; content type set() bez efektu v
+  Bitwig 6; lokální API javadoc v `Bitwig Studio\resources\doc\control-surface\api`.
   c) Experiment: stisk data knobu v PC režimu jako commit – zjistit, zda
   press něco vysílá; „otoč → stiskni = nahrát" by bylo přesnější UX
   než časovač 1,2 s.

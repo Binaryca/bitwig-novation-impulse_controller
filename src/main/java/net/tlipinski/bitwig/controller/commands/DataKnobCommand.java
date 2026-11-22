@@ -14,13 +14,13 @@ import net.tlipinski.bitwig.controller.MidiCommand;
  * <p>The knob drives the modern popup browser; the deprecated browsing
  * sessions and the old preset API (Device.loadPreset, switchToNextPreset,
  * ...) are not available with the required API version 25. The browser is
- * opened at the cursor device's replace insertion point (which opens the
- * preset selection for that device), the preset content type is selected -
- * the "Plug-in Presets" tab for VST/AU/CLAP devices (the indexed preset
- * FILES of the plug-in; the presets stored inside the plug-in's own GUI
- * are not reachable through Bitwig) and the Bitwig presets for native
- * devices - and the highlighted preset is loaded with
- * {@code commit()}.</p>
+ * opened at the cursor device's replace insertion point, which Bitwig
+ * already scopes to the presets matching that device; which of the preset
+ * content types is shown (Bitwig Presets / Plug-in Presets) is remembered
+ * by the browser per context and chosen in the UI (the API's
+ * selectedContentTypeIndex().set() does not take effect there in Bitwig 6,
+ * so the extension does not force it), and the highlighted preset is
+ * loaded with {@code commit()}.</p>
  *
  * <p>The pending knob steps are drained with the browser's own file
  * selection actions ({@code selectNextFile()}/{@code selectPreviousFile()}).
@@ -76,8 +76,6 @@ public class DataKnobCommand implements MidiCommand {
                 this.pendingOpen = false;
                 this.browseAttempts = 0;
             } else {
-                this.contentTypeSet = false;
-                this.contentTypeAttempts = 0;
                 this.ready = false;
                 this.openedAt = 0;
                 if (this.auditionDisabled) {
@@ -103,7 +101,6 @@ public class DataKnobCommand implements MidiCommand {
 
         browser.selectedContentTypeIndex().markInterested();
         browser.contentTypeNames().markInterested();
-        cursorDevice.deviceType().markInterested();
 
         controller.getHost().scheduleTask(this::tick, TICK_MS);
     }
@@ -175,10 +172,6 @@ public class DataKnobCommand implements MidiCommand {
                     openedAt = now;
                 }
 
-                if (!contentTypeSet) {
-                    contentTypeSet = selectPresetContentType();
-                }
-
                 // The browser is considered settled after a short delay; the
                 // selection steps sent earlier would be swallowed.
                 if (!ready && now - openedAt >= READY_DELAY_MS) {
@@ -222,80 +215,6 @@ public class DataKnobCommand implements MidiCommand {
     }
 
     /**
-     * Selects the preset content type in the popup browser when it is not
-     * already selected; returns true when done (or when the content types
-     * are not reported, in which case the type the insertion point opened
-     * with is kept), false when the change should be retried.
-     */
-    private boolean selectPresetContentType() {
-        String[] names = browser.contentTypeNames().get();
-        int target = targetIndex(names, isPluginDevice());
-        if (target < 0) {
-            // Content type names may not be reported in newer Bitwig
-            // versions; keep the type the insertion point opened with.
-            return true;
-        }
-        if (browser.selectedContentTypeIndex().get() == target) {
-            return true;
-        }
-        browser.selectedContentTypeIndex().set(target);
-        return ++contentTypeAttempts >= 5;
-    }
-
-    /**
-     * Whether the cursor device is a plug-in (VST, AU or CLAP): those browse
-     * the plug-in preset files when the browser offers the tab.
-     */
-    private boolean isPluginDevice() {
-        String type = cursorDevice.deviceType().get().toLowerCase();
-        boolean plugin = type.startsWith("vst") || type.startsWith("au")
-                || type.startsWith("clap") || type.startsWith("plugin");
-        // Diagnostic: remove after the content type selection is verified.
-        if (controller.getPreferences().debug()) {
-            controller.getHost().errorln("DataKnob: type='" + type + "' plugin=" + plugin
-                    + " names=" + String.join(" | ", browser.contentTypeNames().get()));
-        }
-        return plugin;
-    }
-
-    /**
-     * Resolves the content type index to browse presets in: plug-in devices
-     * prefer the "Plug-in Presets" tab (the indexed preset FILES of the
-     * plug-in - H2P, FXP, FXB, VSTPRESET -; the presets kept inside the
-     * plug-in's own GUI are not reachable through Bitwig at all), other
-     * devices browse the Bitwig presets and skip a plug-in tab. Returns -1
-     * when nothing matches (the caller then keeps the type the insertion
-     * point opened with).
-     */
-    static int targetIndex(String[] names, boolean pluginDevice) {
-        int firstPreset = -1;
-        int pluginPreset = -1;
-        for (int i = 0; i < names.length; i++) {
-            // Normalized so the "Plug-in" naming variant matches too.
-            String name = names[i].toLowerCase().replaceAll("[^a-z]", "");
-            if (!name.contains("preset")) {
-                continue;
-            }
-            if (firstPreset < 0) {
-                firstPreset = i;
-            }
-            if (pluginPreset < 0 && name.contains("plugin")) {
-                pluginPreset = i;
-            }
-        }
-        if (pluginDevice) {
-            return pluginPreset >= 0 ? pluginPreset : firstPreset;
-        }
-        for (int i = 0; i < names.length; i++) {
-            String name = names[i].toLowerCase().replaceAll("[^a-z]", "");
-            if (name.contains("preset") && !name.contains("plugin")) {
-                return i;
-            }
-        }
-        return firstPreset;
-    }
-
-    /**
      * Relative change between two program numbers; the program number wraps
      * between 0 and 127, so a jump across the wrap counts as a small step.
      */
@@ -314,12 +233,10 @@ public class DataKnobCommand implements MidiCommand {
     private long browseSentAt = 0;
     private int previous = -1;
     private int pendingSteps = 0;
-    private int contentTypeAttempts = 0;
     private int browseAttempts = 0;
     private boolean browsing = false;
     private boolean pendingOpen = false;
     private boolean closing = false;
-    private boolean contentTypeSet = false;
     private boolean ready = false;
     private boolean auditionWasOn = false;
     private boolean auditionDisabled = false;
