@@ -253,15 +253,47 @@ Doplňková dokumentace: [HARDWARE.md](HARDWARE.md) (hardware a SysEx),
   Projít mapování pro menší modely (1 fader, 0 tlačítek pod fadery), testy
   proti `ImpulseModel`.
 
-- [ ] **Punch in / out (loop range)** *(návrh – Nektar LX61)*
-  Shift varianty transportu pro nastavení začátku/konce loopu
-  (`transport.getPosition().set(...)`, in/out dle Nektaru LX61). U nás jsou
-  Shift+Loop/Rewind/Forward volné v mix režimu (scény jsou bez Shiftu).
-  *Soubory:* `commands/transport/`, `Transport`.
+- [x] **Master ↔ cursor track fader** *(v1.6 příprava, implementováno
+  22.11.2026)*
+  Master button (CC 17) přepíná, zda fader 9 řídí master track nebo cursor
+  track. Trigger: **plugin režim = plain Master** (tam je button dnes
+  no-op), **mixer režim = Shift + Master** (plain zůstává mute masteru —
+  exclusive mute masteru přes Shift+Master tím padá, přijato). Stav v
+  `Controller` (`masterFaderFollowsCursor`, default false = dnešní
+  chování). `MasterFaderToggleCommand` registrován před
+  `SingleMuteCommand` (Shift+17 jinak spolkne exclusive mute);
+  `DeviceOnOffCommand` zúžen na CC 9–16 (17 padá do toggle). Takeover:
+  **`reset(FADER_MASTER)` při každém toggle** a **podmíněně při změně
+  cursor track** (observer na `cursorTrack.name()`, jen když follow
+  aktivní — jinak by změna stopy neoprávněně odpojila master fader;
+  poučka z FaderCursorCommand replay pro index 8). Displej `Master` /
+  `Cursor`; LED nedotčena (mixer = mute stav). 3 unit testy
+  (`FaderCommand.usesCursorTrack`).
+  *Soubory:* `Controller`, `commands/mixer/MasterFaderToggleCommand`,
+  `commands/mixer/FaderCommand`, `commands/devices/DeviceOnOffCommand`,
+  `NovationImpulseExtension`, `FaderCommandTest`.
 
-- [ ] **Master ↔ cursor track fader** *(návrh – Nektar LX61)*
-  Tlačítko Master přepíná, zda fader 9 řídí master track nebo vybranou stopu.
-  *Soubory:* `FaderCommand`, `Midi.BUTTON_MASTER`.
+- [x] **Punch in / out (loop range)** *(v1.6 příprava, implementováno
+  22.11.2026)*
+  **Shift + Loop (mix panel zavřený)**: 1. stisk = punch in
+  (`arrangerLoopStart().set(pozice)` + `isArrangerLoopEnabled().set(true)`,
+  displej `Punch In`), 2. stisk = punch out
+  (`arrangerLoopDuration().set(max(1.0, pozice - start))`, displej
+  `Punch Out`). Stateful cyklus v čisté třídě `PunchState` (7 unit
+  testů: cyklus, **timeout 30 s** → nový punch in, clamp minimální
+  délky 1 beat, po out zase in) — timeout bez tickeru (timestamp
+  kontrola při dalším stisku). Plain Loop = toggle loopu (beze změny);
+  mix panel otevřený = Shift+Loop = stop all clips (beze změny; punch
+  jen v arrange). Poučky: **`toggleLoop()`/`setLoop()` deprecated →
+  hází** (value API `isArrangerLoopEnabled()`); **`getInPosition()/
+  getOutPosition()` = punch pozice pro NAHRÁVÁNÍ, ne loop** (loop =
+  `arrangerLoopStart/Duration`); **každý `createTransport()` = nový
+  proxy → markInterested vlastních values** (poučka z bank proxy).
+  Pozn.: původní poznámka „Shift+Rwd/FFwd volné v mix režimu" byla
+  chybná — Undo/Redo nejsou gated panelem; jediné volné Shift+transport
+  = Shift+Loop v arrange.
+  *Soubory:* `commands/transport/PunchState`, `PunchCommand`,
+  `PunchStateTest`, `NovationImpulseExtension`.
 
 - [ ] **Data knob – drobná vylepšení** *(poznámky z implementace 16.11.2026)*
   a) Preference *Preview při otáčení* – náhledy (audition) jsou teď natvrdo
@@ -294,15 +326,20 @@ Doplňková dokumentace: [HARDWARE.md](HARDWARE.md) (hardware a SysEx),
   rework na API 25, P0 funkce, data knob + wiring) 17.11.2026.
   Push čeká na fork `tlipinski/bitwig-novation-impulse` pod účtem `Binaryca`
   (origin ukazuje na původní repozitář).
-- [ ] **CI** – GitHub Actions workflow (JDK 21 + Maven, artefakt `.bwextension`),
-  případně nahradit `circle.yml`.
+- [x] **CI** *(22.11.2026)* – GitHub Actions workflow (`.github/workflows/build.yml`):
+  JDK 21 (Temurin) + Maven, testy + artifact `.bwextension`; mrtvý
+  `circle.yml` (CircleCI 1.0, openjdk11) smazán. Push workflow souboru
+  vyžaduje **`workflow` scope tokenu** (repo scope nestačí) — commit
+  `80fe562` čeká na scope, jinak push rejected. V `.gitignore` výjimky pro
+  `.github` (`.*` je ignoroval).
 - [x] **Release 1.4** *(17.11.2026)* – tag `v1.4` na `myfork/improvements`,
   changelog v README (Changes in 1.4), release + upload `.bwextension`
   vytvořeny přes GitHub API (uložený push token).
 - [x] **Release 1.5** *(18.11.2026)* – tag `v1.5` na `myfork/improvements`,
   changelog v README (Changes in 1.5), release + upload `.bwextension`
   vytvořeny přes GitHub API.
-- [x] **Verze** – bump na 1.4 (pom.xml).
+- [x] **Verze** – bump na 1.5 (pom.xml); 1.6 po hardware ověření
+  Master↔cursor faderu a punch in/out.
 
 ## Testovací checklist (hardware)
 

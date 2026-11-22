@@ -112,6 +112,9 @@ standing bugs and adds new features:
 - Arranger position scrub with the transport rewind/fast-forward buttons
   (one beat per click, continuous while held)
 - Metronome toggle (Shift + Play) and project save (Shift + Stop)
+- The master fader can follow the cursor track (master button toggle)
+- Punch in/out of the arranger loop (Shift + Loop: first press sets the
+  loop start, a second press within 30 seconds sets the loop end)
 - Fader soft takeover (pickup): the faders take over a track only when their
   physical position reaches the value, with stray hardware messages from
   resting faders filtered out
@@ -119,6 +122,18 @@ standing bugs and adds new features:
 - Sustain, modulation and expression pedal support through Bitwig note input
 - SysEx template sender in the Bitwig controller preferences, optional
   automatic template send at startup
+
+## Changes in 1.6
+
+- Added the **master fader follow toggle**: the master button (plugin mode:
+  plain press; mixer mode: Shift + press) switches the master fader between
+  the master track and the cursor track; the soft takeover re-engages on the
+  change and on cursor track changes while following
+- Added **punch in/out** for the arranger loop: Shift + Loop sets the loop
+  start (the loop is enabled), a second press within 30 seconds sets the
+  loop end at the current position; works with the Mix panel closed
+- Replaced the dead CircleCI configuration with a **GitHub Actions
+  workflow** (JDK 21, tests, extension artifact)
 
 ## Changes in 1.5
 
@@ -252,6 +267,8 @@ Select this template on the Impulse before using the controller script.
 | Rewind/Fast-forward otherwise | Scrub the arranger position (click = 1 beat, hold = continuous) |
 | Shift + Play | Toggle the metronome click |
 | Shift + Stop | Save the project |
+| Master button in Plugin mode | Toggle: master fader follows the cursor track |
+| Shift + Loop (Arrange view) | Punch in, then punch out of the arranger loop |
 | Track bank buttons | Scroll the track bank by pages |
 | Track previous/next | Select the cursor track |
 | Data knob (Prog Change mode) | Browse and load presets of the selected device |
