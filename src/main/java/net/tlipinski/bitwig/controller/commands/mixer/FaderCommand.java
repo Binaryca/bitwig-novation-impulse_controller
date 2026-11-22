@@ -27,7 +27,9 @@ public class FaderCommand implements MidiCommand {
 
     @Override
     public void handle(int data1, int data2) {
-        Track track = controller.getTracks().get(data1);
+        Track track = FaderCommand.usesCursorTrack(data1, controller.isMasterFaderFollowsCursor())
+                ? controller.getTracks().getCursorTrack()
+                : controller.getTracks().get(data1);
         if (track == null) {
             sysexSend.displayText("<empty>");
             return;
@@ -56,6 +58,15 @@ public class FaderCommand implements MidiCommand {
                 sysexSend.displayNumber(data2);
                 return;
         }
+    }
+
+    /**
+     * Whether the fader message targets the cursor track instead of the
+     * bank/master track: only the master fader can follow the cursor, and
+     * only while the master-fader toggle is active.
+     */
+    static boolean usesCursorTrack(int data1, boolean masterFaderFollowsCursor) {
+        return data1 == Midi.FADER_MASTER && masterFaderFollowsCursor;
     }
 
     private final Controller controller;

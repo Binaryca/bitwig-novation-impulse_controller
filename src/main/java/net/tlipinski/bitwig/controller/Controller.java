@@ -72,6 +72,15 @@ public class Controller {
         return shiftPressed;
     }
 
+    public boolean isMasterFaderFollowsCursor() {
+        return masterFaderFollowsCursor;
+    }
+
+    public boolean toggleMasterFaderFollowsCursor() {
+        masterFaderFollowsCursor = !masterFaderFollowsCursor;
+        return masterFaderFollowsCursor;
+    }
+
     public EncoderMixerModePage getEncoderMixerPage() {
         return encoderMixerPage;
     }
@@ -97,6 +106,7 @@ public class Controller {
     private ButtonsMode buttonsMode = ButtonsMode.MUTE;
     private EncoderMode encoderMode = EncoderMode.PLUGIN;
     private boolean shiftPressed = false;
+    private boolean masterFaderFollowsCursor = false;
     private EncoderMixerModePage encoderMixerPage = new EncoderMixerModePage();
     private ImpulseModel model = ImpulseModel.IMPULSE_25;
 

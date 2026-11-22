@@ -54,12 +54,12 @@ public class DeviceOnOffCommand implements MidiCommand {
     public boolean triggersWhen(int statusByte, int data1, int data2) {
         // The buttons send 127 on press and 0 on release; only the press may
         // act (the release would otherwise toggle or select a second time).
-        // The master button is included so this command swallows it before
-        // the mute/solo commands can act on it.
+        // The master button (CC 17) is not included: in the plugin mode it
+        // toggles the master fader target instead (MasterFaderToggleCommand).
         return controller.getEncoderMode() == EncoderMode.PLUGIN
                 && statusByte == Midi.CH1_CC
                 && data1 >= Midi.BUTTON_FIRST
-                && data1 <= Midi.BUTTON_LAST
+                && data1 < Midi.BUTTON_LAST
                 && Midi.isPressed(data2);
     }
 
